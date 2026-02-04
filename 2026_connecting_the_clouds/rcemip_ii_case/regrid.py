@@ -47,18 +47,6 @@ class Grid:
         self.yh = np.arange(0, ysize, self.dy)
 
 
-def read_field(grid, path, name, float_type):
-    """
-    Read 3D field from binary.
-    """
-    #fld = np.zeros((grid.ktot, grid.jtot, grid.itot), dtype=float_type)
-
-    path = os.path.join(path, name)
-    fld = np.fromfile(path, dtype=float_type)
-    fld = fld.reshape((grid.ktot, grid.jtot, grid.itot))
-    return fld
-
-
 def calc_nn_indices(x_in, x_out):
     """
     Calculate nearest-neighbour indexes.
@@ -77,7 +65,17 @@ def interp_kernel_3d(fld_out, fld_in, nn_i, nn_j, itot, jtot, ktot):
                 fld_out[k,j,i] = fld_in[k, nn_j[j], nn_i[i]]
 
 
-def interp_nn_3d(fld_in, x_in, y_in, x_out, y_out, float_type):
+@jit(nopython=True, fastmath=True, nogil=True, parallel=True)
+def interp_kernel_2d(fld_out, fld_in, nn_i, nn_j, itot, jtot):
+    """
+    Fast parallel NN interpolation kernel.
+    """
+    for j in prange(jtot):
+        for i in prange(itot):
+            fld_out[j,i] = fld_in[nn_j[j], nn_i[i]]
+
+
+def interp_nn(fld_in, x_in, y_in, x_out, y_out, float_type):
     """
     Nearest neighbour interpolation.
     """
@@ -88,16 +86,27 @@ def interp_nn_3d(fld_in, x_in, y_in, x_out, y_out, float_type):
     nn_i = calc_nn_indices(x_in, x_out)
     nn_j = calc_nn_indices(y_in, y_out)
 
-    fld_out = np.zeros((ktot, jtot, itot), dtype=np.float32)
-    interp_kernel_3d(fld_out, fld_in, nn_i, nn_j, itot, jtot, ktot)
+    if fld_in.ndim == 2:
+        fld_out = np.zeros((jtot, itot), dtype=float_type)
+        interp_kernel_2d(fld_out, fld_in, nn_i, nn_j, itot, jtot)
+
+    elif fld_in.ndim == 3:
+        fld_out = np.zeros((ktot, jtot, itot), dtype=float_type)
+        interp_kernel_3d(fld_out, fld_in, nn_i, nn_j, itot, jtot, ktot)
+
     return fld_out
 
 
-def parse_field(variable, grid_in, x_in, y_in, x_out, y_out, time_in, time_out, path_in, path_out, float_type):
+def parse_field(variable, grid_in, x_in, y_in, x_out, y_out, time_in, time_out, path_in, path_out, float_type, is_3d=True):
 
-    fld_in = read_field(grid_in, path_in, f'{variable}.{time_in:07d}', float_type)
-    fld_out = interp_nn_3d(fld_in, x_in, y_in, x_out, y_out, float_type)
-    fld_out.tofile(f'{path_out}/{variable}_interp.{time_out:07d}')
+    shape = (grid_in.ktot, grid_in.jtot, grid_in.itot) if is_3d else (grid_in.jtot, grid_in.itot)
+
+    file_in  = f'{path_in}/{variable}.{time_in:07d}'
+    file_out = f'{path_out}/{variable}_interp.{time_in:07d}'
+
+    fld_in = np.fromfile(file_in, dtype=float_type).reshape(shape)
+    fld_out = interp_nn(fld_in, x_in, y_in, x_out, y_out, float_type)
+    fld_out.tofile(file_out)
 
     #plt.figure()
     #ax=plt.subplot(121)
@@ -136,11 +145,17 @@ time_out = 0
 
 tic = datetime.now()
 
-parse_field('u', grid_in, grid_in.xh, grid_in.y, grid_out.xh, grid_out.y, time_in, time_out, path_in, path_out, float_type)
-parse_field('v', grid_in, grid_in.x, grid_in.yh, grid_out.x, grid_out.yh, time_in, time_out, path_in, path_out, float_type)
+# Half-level 3D fields in x/y:
+parse_field('u', grid_in, grid_in.xh, grid_in.y, grid_out.xh, grid_out.y, time_in, time_out, path_in, path_out, float_type, True)
+parse_field('v', grid_in, grid_in.x, grid_in.yh, grid_out.x, grid_out.yh, time_in, time_out, path_in, path_out, float_type, True)
 
+# Full level 3D fields in x/y:
 for var in ('w', 'thl', 'qt', 'qr', 'qs', 'qg'):
-    parse_field(var, grid_in, grid_in.x, grid_in.y, grid_out.x, grid_out.y, time_in, time_out, path_in, path_out, float_type)
+    parse_field(var, grid_in, grid_in.x, grid_in.y, grid_out.x, grid_out.y, time_in, time_out, path_in, path_out, float_type, True)
+
+# 2D fields. NOTE: dudz and dvdz are also at full levels.
+for var in ('dbdz_mo', 'dudz_mo', 'dvdz_mo', 'obuk', 'qt_bot', 'thl_bot'):
+    parse_field(var, grid_in, grid_in.x, grid_in.y, grid_out.x, grid_out.y, time_in, time_out, path_in, path_out, float_type, False)
 
 toc = datetime.now()
 print(f'Interpolations took {toc-tic}...')

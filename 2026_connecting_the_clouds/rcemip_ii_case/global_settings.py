@@ -28,7 +28,7 @@ if system == 'eddy':
     gpt_path = '/home/bart/meteo/models/coefficients_veerman/' 
     microhh_path = '/home/bart/meteo/models/microhh/'
     microhh_bin = '/home/bart/meteo/models/microhh/build_sp_cpumpi/microhh'
-    work_dir = 'test'
+    work_dir = 'test_200m'
 
 elif system == 'snellius':
     project = None
