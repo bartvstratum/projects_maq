@@ -102,7 +102,7 @@ def parse_field(variable, grid_in, x_in, y_in, x_out, y_out, time_in, time_out, 
     shape = (grid_in.ktot, grid_in.jtot, grid_in.itot) if is_3d else (grid_in.jtot, grid_in.itot)
 
     file_in  = f'{path_in}/{variable}.{time_in:07d}'
-    file_out = f'{path_out}/{variable}_interp.{time_in:07d}'
+    file_out = f'{path_out}/{variable}.{time_out:07d}'
 
     fld_in = np.fromfile(file_in, dtype=float_type).reshape(shape)
     fld_out = interp_nn(fld_in, x_in, y_in, x_out, y_out, float_type)
