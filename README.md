@@ -1,2 +1,3 @@
-# projects_maq
-Public repository of projects @ MAQ
+# Projects @ MAQ-WUR
+
+Public repository of projects at the meteorology and air quality (MAQ) section, Wageningen University & Research (WUR), the Netherlands. 
