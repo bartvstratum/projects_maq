@@ -43,37 +43,14 @@ ps = 101480
 """
 Horizontal grid.
 """
-# Tiny test domain.
-#xsize = 64*400
-#ysize = 64*400
-#
-#itot = 64
-#jtot = 64
-#
-#npx = 2
-#npy = 4
-
-xsize = 128*200
-ysize = 128*200
-
-itot = 128
-jtot = 128
-
-npx = 2
-npy = 4
-
-
-"""
-# Small test domain.
-xsize = 512*400
-ysize = 512*400
+xsize = 512*200
+ysize = 512*200
 
 itot = 512
 jtot = 512
 
-npx = 8
-npy = 16
-"""
+npx = 1
+npy = 1
 
 """
 # Full domain, 400 m resolution.
@@ -115,11 +92,24 @@ zh = np.append(0., zh)
 zh = np.append(zh, zsize)
 """
 
+# 128, lower resolution near cloud top
 z = np.array([0, 2_000, 20_000, 100_000])
 f = np.array([1.05, 1.012, 1.04])
 grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
+
+## 128, same as RCEMIP <15 km, more agressive stretching above.
+#z = np.array([0, 3_000, 15_000, 100_000])
+#f = np.array([1.05, 1.00, 1.055])
+#grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
+#
+## 128, same as RCEMIP <15 km, less agressive stretching, lower domain.
+#z = np.array([0, 3_000, 15_000, 100_000])
+#f = np.array([1.05, 1.00, 1.03])
+#grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
+
 z = grid.z
 zsize = grid.zsize
+
 
 # G-point sets from Veerman (2024).
 # For now the cheapest for testing. TBD with Martin/Menno.
