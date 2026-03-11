@@ -30,7 +30,7 @@ import ls2d
 
 # `mock_walker.py` help functions.
 from rcemip_ii import rcemip_ii_input
-import global_settings as settings
+import global_settings as env
 
 
 """
@@ -42,59 +42,60 @@ sw_cos_sst = False  # False for RCEMIP-I, True for RCEMIP-II
 mean_sst = 300
 d_sst = 2.5
 ps = 101480
-#endtime = 1800
 endtime = 10
 
-#coef_sw='rrtmgp-gas-sw-g049-cf2.nc'
-#coef_lw='rrtmgp-gas-lw-g056-cf2.nc'
+coef_sw='rrtmgp-gas-sw-g049-cf2.nc'
+coef_lw='rrtmgp-gas-lw-g056-cf2.nc'
 
-coef_sw = 'rrtmgp-gas-sw-g112.nc'
-coef_lw = 'rrtmgp-gas-lw-g128.nc'
+#coef_sw = 'rrtmgp-gas-sw-g112.nc'
+#coef_lw = 'rrtmgp-gas-lw-g128.nc'
 
 create_slurm_script = True
 wc_time = '01:00:00'
 
 
-def run_weak_scaling(settings, rotated_domain=False, lfs_c=1, lfs_s='1M'):
+def run_weak_scaling(exp_settings, rotated_domain=False, lfs_c=1, lfs_s='1M'):
     """
     Run weak scaling set for all configs.
     """
-    name = settings['name']
+    name = exp_settings['name']
     print(f'====== Running {name} ======')
 
-    if settings['ktot'] == 128:
-        # Custom 128 layer grid.
-        z = np.array([0, 2_000, 20_000, 100_000])
-        f = np.array([1.05, 1.012, 1.04])
+    if exp_settings['ktot'] == 128:
+        # Custom 128h layer grid.
+        z = np.array([0, 3_000, 15_000, 100_000])
+        f = np.array([1.05, 1.00, 1.055])
         grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
         z = grid.z
         zsize = grid.zsize
-    elif settings['ktot'] == 144:
+
+    elif exp_settings['ktot'] == 144:
         # Official RCEMIP LES grid.
         z = np.loadtxt('rcemip_les_grid.txt')
         z = z[:-2]   # From 146 to 144 levels for domain decomposition.
         zsize = 32250
+
     else:
         raise Exception('Invalid vertical grid.')
 
-    for nn_x, nn_y in settings['configs']:
+    for nn_x, nn_y in exp_settings['configs']:
 
-        itot = settings['itot_b'] * nn_x
-        jtot = settings['jtot_b'] * nn_y
+        itot = exp_settings['itot_b'] * nn_x
+        jtot = exp_settings['jtot_b'] * nn_y
 
-        npx = settings['npx_b'] * nn_x
-        npy = settings['npy_b'] * nn_y
+        npx = exp_settings['npx_b'] * nn_x
+        npy = exp_settings['npy_b'] * nn_y
 
-        xsize = itot * settings['dxy']
-        ysize = jtot * settings['dxy']
+        xsize = itot * exp_settings['dxy']
+        ysize = jtot * exp_settings['dxy']
 
         case_name = f'{name}_{nn_x}x{nn_y}'
-        case_path = f'{work_dir}/{name}/{nn_x}x{nn_y}'
+        case_path = f'{env.work_dir}/{name}/{nn_x}x{nn_y}'
 
         if not os.path.exists(case_path):
             os.makedirs(case_path)
 
-        copy_out_to = work_dir
+        copy_out_to = env.work_dir
 
         slurm_script = rcemip_ii_input(
                 case_name,
@@ -116,12 +117,12 @@ def run_weak_scaling(settings, rotated_domain=False, lfs_c=1, lfs_s='1M'):
                 coef_lw,
                 wc_time,
                 case_path,
-                gpt_path,
-                microhh_path,
-                microhh_bin,
+                env.gpt_path,
+                env.microhh_path,
+                env.microhh_bin,
                 create_slurm_script,
-                project,
-                partition,
+                env.project,
+                env.partition,
                 copy_out_to,
                 lfs_c,
                 lfs_s,
@@ -143,7 +144,6 @@ for stripe_count in [1,2,4,8,16,32]:
 
 
 
-#"""
 #200 m, 128 levels.
 #"""
 #settings = (
@@ -161,9 +161,10 @@ for stripe_count in [1,2,4,8,16,32]:
 #400 m, 128 vertical levels.
 #"""
 #settings = (
-#    dict(name='400_128_16x1', itot_b=960, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (2,1), (4,1), (8,1), (16,1)]),
-#    dict(name='400_128_16x2', itot_b=960, jtot_b= 512, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (1,2), (2,2), (4,2), (8,2), (16,2)]),
-#    dict(name='400_128_16x4', itot_b=960, jtot_b= 256, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (1,2), (1,4), (2,4), (4,4), (8,4), (16,4)])
+#    dict(name='400_128_8x1',  itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (2,1), (4,1), (8,1)]),
+#    dict(name='400_128_16x1', itot_b=960,  jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (2,1), (4,1), (8,1), (16,1)]),
+#    dict(name='400_128_16x2', itot_b=960,  jtot_b= 512, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (1,2), (2,2), (4,2), (8,2), (16,2)]),
+#    dict(name='400_128_16x4', itot_b=960,  jtot_b= 256, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (1,2), (1,4), (2,4), (4,4), (8,4), (16,4)])
 #)
 #
 #for setting in settings:

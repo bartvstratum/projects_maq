@@ -20,7 +20,7 @@
 #  along with MicroHH.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-system = 'eddy'
+system = 'lumi'
 
 if system == 'eddy':
     project = None
