@@ -20,7 +20,7 @@
 #  along with MicroHH.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-system = 'lumi'
+system = 'snellius2'
 
 if system == 'eddy':
     project = None
@@ -30,13 +30,21 @@ if system == 'eddy':
     microhh_bin = '/home/bart/meteo/models/microhh/build_sp_cpumpi/microhh'
     work_dir = 'test_200m'
 
-elif system == 'snellius':
+elif system == 'snellius':  # MAQ account
     project = None
     partition = 'rome'
     gpt_path = '/gpfs/work3/0/lesmodels/team_bart/coefficients_veerman'
     microhh_path = '/home/bstratum/meteo/models/microhh'
     microhh_bin = '/home/bstratum/meteo/models/microhh/build_sp_cpumpi/microhh'
     work_dir = '/scratch-shared/bstratum/mock_walker_test'
+
+elif system == 'snellius2':  # Ruisdael account
+    project = None
+    partition = 'rome'
+    gpt_path = '/home/bvstratum/meteo/models/coefficients_veerman'
+    microhh_path = '/home/bvstratum/meteo/models/microhh'
+    microhh_bin = '/home/bvstratum/meteo/models/microhh/build_spdp_cpumpi/microhh'
+    work_dir = '/scratch-shared/bvstratum/rcemip_ii_800m'
 
 elif system == 'ecmwf':
     project = None

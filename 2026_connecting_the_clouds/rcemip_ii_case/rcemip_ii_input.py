@@ -43,14 +43,28 @@ ps = 101480
 """
 Horizontal grid.
 """
-xsize = 240*200
-ysize = 128*200
+xsize = 512*200
+ysize = 512*200
 
-itot = 240
-jtot = 128
+itot = 512
+jtot = 512
 
 npx = 1
 npy = 1
+
+"""
+
+# Full domain, 800 m resolution.
+itot = 7680
+jtot = 512
+
+dxy = 781.25
+
+xsize = itot*dxy
+ysize = jtot*dxy
+
+npx = 64
+npy = 16
 
 """
 # Full domain, 400 m resolution.
@@ -102,6 +116,11 @@ z = np.array([0, 3_000, 15_000, 100_000])
 f = np.array([1.05, 1.00, 1.055])
 grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
 
+## 128, same as RCEMIP <15 km, more agressive stretching above.
+#z = np.array([0, 3_000, 15_000, 100_000])
+#f = np.array([1.05, 1.00, 1.055])
+#grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
+#
 ## 128, same as RCEMIP <15 km, less agressive stretching, lower domain.
 #z = np.array([0, 3_000, 15_000, 100_000])
 #f = np.array([1.05, 1.00, 1.03])
@@ -116,10 +135,9 @@ zsize = grid.zsize
 coef_sw = 'rrtmgp-gas-sw-g049-cf2.nc'
 coef_lw = 'rrtmgp-gas-lw-g056-cf2.nc'
 
-name = 'mock_walker'
+name = 'rcemip_ii'
 create_slurm_script = True
-wc_time = '01:00:00'
-dt_max = None
+wc_time = '48:00:00'
 
 if not os.path.exists(settings.work_dir):
     os.makedirs(settings.work_dir)
