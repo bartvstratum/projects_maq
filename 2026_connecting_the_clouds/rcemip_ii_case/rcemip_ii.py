@@ -115,6 +115,7 @@ def rcemip_ii_input(
         copy_out_to=None,
         lfs_c=None,
         lfs_s=None,
+        dt_max=None,
         float_type=np.float32):
     """
     Create input files for Mock Walker case.
@@ -159,6 +160,10 @@ def rcemip_ii_input(
     exn = exner(ps)
     ini['boundary']['sbot[thl]'] = mean_sst / exn
     ini['boundary']['sbot[qt]'] = qsat(ps, mean_sst)
+
+    # Limit time stepping in scaling tests.
+    if dt_max is not None:
+        ini['time']['dtmax'] = dt_max
 
     # Check and write to final .ini file
     check_ini(ini)

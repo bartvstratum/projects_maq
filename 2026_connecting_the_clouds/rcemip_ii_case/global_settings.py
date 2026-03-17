@@ -48,8 +48,16 @@ elif system == 'ecmwf':
 
 elif system == 'lumi':
     project = 'project_465002576'
-    partition = 'small'
+    partition = 'standard'
     gpt_path = '/users/stratumv/meteo/models/coefficients_veerman'
     microhh_path = '/users/stratumv/meteo/models/microhh'
     microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh'
-    work_dir = f'/scratch/{project}/mock_walker_io'
+    work_dir = f'/scratch/{project}/mock_walker_scaling_v5'
+
+    # Default serial I/O (single task) for cross-sections.
+    #microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi_serialio/microhh'
+    #work_dir = f'/scratch/{project}/mock_walker_serialio'
+
+    # Test with MPI I/O for all output incl cross-sections.
+    #microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi_mpiio/microhh'
+    #work_dir = f'/scratch/{project}/mock_walker_mpiio'

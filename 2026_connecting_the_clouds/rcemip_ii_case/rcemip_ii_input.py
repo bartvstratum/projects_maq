@@ -43,11 +43,11 @@ ps = 101480
 """
 Horizontal grid.
 """
-xsize = 512*200
-ysize = 512*200
+xsize = 240*200
+ysize = 128*200
 
-itot = 512
-jtot = 512
+itot = 240
+jtot = 128
 
 npx = 1
 npy = 1
@@ -93,15 +93,15 @@ zh = np.append(zh, zsize)
 """
 
 # 128, lower resolution near cloud top
-z = np.array([0, 2_000, 20_000, 100_000])
-f = np.array([1.05, 1.012, 1.04])
+#z = np.array([0, 2_000, 20_000, 100_000])
+#f = np.array([1.05, 1.012, 1.04])
+#grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
+
+# 128, same as RCEMIP <15 km, more agressive stretching above.
+z = np.array([0, 3_000, 15_000, 100_000])
+f = np.array([1.05, 1.00, 1.055])
 grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
 
-## 128, same as RCEMIP <15 km, more agressive stretching above.
-#z = np.array([0, 3_000, 15_000, 100_000])
-#f = np.array([1.05, 1.00, 1.055])
-#grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
-#
 ## 128, same as RCEMIP <15 km, less agressive stretching, lower domain.
 #z = np.array([0, 3_000, 15_000, 100_000])
 #f = np.array([1.05, 1.00, 1.03])
@@ -119,6 +119,7 @@ coef_lw = 'rrtmgp-gas-lw-g056-cf2.nc'
 name = 'mock_walker'
 create_slurm_script = True
 wc_time = '01:00:00'
+dt_max = None
 
 if not os.path.exists(settings.work_dir):
     os.makedirs(settings.work_dir)
@@ -149,4 +150,5 @@ rcemip_ii_input(
         create_slurm_script,
         settings.project,
         settings.partition,
+        dt_max,
         float_type)

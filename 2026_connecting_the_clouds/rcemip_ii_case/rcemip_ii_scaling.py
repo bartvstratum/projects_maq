@@ -42,16 +42,26 @@ sw_cos_sst = False  # False for RCEMIP-I, True for RCEMIP-II
 mean_sst = 300
 d_sst = 2.5
 ps = 101480
-endtime = 10
+endtime = 900
 
-coef_sw='rrtmgp-gas-sw-g049-cf2.nc'
-coef_lw='rrtmgp-gas-lw-g056-cf2.nc'
+#coef_sw='rrtmgp-gas-sw-g049-cf2.nc'
+#coef_lw='rrtmgp-gas-lw-g056-cf2.nc'
 
-#coef_sw = 'rrtmgp-gas-sw-g112.nc'
-#coef_lw = 'rrtmgp-gas-lw-g128.nc'
+coef_sw = 'rrtmgp-gas-sw-g112.nc'
+coef_lw = 'rrtmgp-gas-lw-g128.nc'
 
 create_slurm_script = True
-wc_time = '01:00:00'
+wc_time = '02:00:00'
+
+"""
+Scaling uses a fixed time step.
+At cold start, dynamics are undeveloped so the dynamic dt is too large,
+causing statistics/IO/radiation to be called unrealistically often.
+These time steps were estimated from longer simulations on the ECMWF HPC.
+"""
+dt_200 = 4.4
+dt_400 = 5.1
+dt_800 = 3.5    # Yikes; limited by diffusion because of the pancake grid cells.
 
 
 def run_weak_scaling(exp_settings, rotated_domain=False, lfs_c=1, lfs_s='1M'):
@@ -88,6 +98,8 @@ def run_weak_scaling(exp_settings, rotated_domain=False, lfs_c=1, lfs_s='1M'):
 
         xsize = itot * exp_settings['dxy']
         ysize = jtot * exp_settings['dxy']
+
+        dt_max = exp_settings['dt']
 
         case_name = f'{name}_{nn_x}x{nn_y}'
         case_path = f'{env.work_dir}/{name}/{nn_x}x{nn_y}'
@@ -126,107 +138,75 @@ def run_weak_scaling(exp_settings, rotated_domain=False, lfs_c=1, lfs_s='1M'):
                 copy_out_to,
                 lfs_c,
                 lfs_s,
+                dt_max,
                 float_type)
 
         subprocess.run(['sbatch', slurm_script], check=True)
 
 
-"""
-MPI-IO LFS striping settings.
-"""
-stripe_count=None
-stripe_size=None
-run_weak_scaling(dict(name=f'200_128_{stripe_count}_{stripe_size}', itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, configs=[(2,2)]), lfs_c=stripe_count, lfs_s=stripe_size)
+def run_io_benchmark():
+    """
+    MPI-IO LFS striping settings.
+    """
+    stripe_count=None
+    stripe_size=None
+    run_weak_scaling(dict(name=f'200_128_{stripe_count}_{stripe_size}', itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, configs=[(2,2)]), lfs_c=stripe_count, lfs_s=stripe_size)
 
-for stripe_count in [1,2,4,8,16,32]:
-    for stripe_size in ['1M', '2M', '4M']:
-        run_weak_scaling(dict(name=f'200_128_{stripe_count}_{stripe_size}', itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, configs=[(2,2)]), lfs_c=stripe_count, lfs_s=stripe_size)
-
-
-
-#200 m, 128 levels.
-#"""
-#settings = (
-#    dict(name='200_128_16x1', itot_b=1920, jtot_b=2048, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, configs=[(1,1), (2,1), (4,1), (8,1), (16,1)]),
-#    dict(name='200_128_16x2', itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, configs=[(1,1), (1,2), (2,2), (4,2), (8,2), (16,2)]),
-#    dict(name='200_128_16x4', itot_b=1920, jtot_b= 512, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (2,4), (4,4), (8,4), (16,4)]),
-#    dict(name='200_128_16x8', itot_b=1920, jtot_b= 256, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (2,8), (4,8), (8,8), (16,8)]),
-#    ) 
-#
-#for setting in settings:
-#    run_weak_scaling(setting, False)
-#
-#
-#"""
-#400 m, 128 vertical levels.
-#"""
-#settings = (
-#    dict(name='400_128_8x1',  itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (2,1), (4,1), (8,1)]),
-#    dict(name='400_128_16x1', itot_b=960,  jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (2,1), (4,1), (8,1), (16,1)]),
-#    dict(name='400_128_16x2', itot_b=960,  jtot_b= 512, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (1,2), (2,2), (4,2), (8,2), (16,2)]),
-#    dict(name='400_128_16x4', itot_b=960,  jtot_b= 256, ktot=128, npx_b=8, npy_b=16, dxy=390.625, configs=[(1,1), (1,2), (1,4), (2,4), (4,4), (8,4), (16,4)])
-#)
-#
-#for setting in settings:
-#    run_weak_scaling(setting, False)
+    for stripe_count in [1, 2, 4, 8, 16, 32]:
+        for stripe_size in ['1M', '2M', '4M']:
+            run_weak_scaling(dict(name=f'200_128_{stripe_count}_{stripe_size}', itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, configs=[(2,2)]), lfs_c=stripe_count, lfs_s=stripe_size)
 
 
+def run_200m_scaling():
+    """
+    200 m, 128 levels.
+    """
+    settings = (
+        dict(name='200_128_16x1', itot_b=1920, jtot_b=2048, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, dt=dt_200, configs=[(1,1), (2,1), (4,1), (8,1), (16,1)]),
+        dict(name='200_128_16x2', itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, dt=dt_200, configs=[(1,1), (1,2), (2,2), (4,2), (8,2), (16,2)]),
+        dict(name='200_128_16x4', itot_b=1920, jtot_b= 512, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, dt=dt_200, configs=[(1,1), (1,2), (1,4), (2,4), (4,4), (8,4), (16,4)]),
+        dict(name='200_128_16x8', itot_b=1920, jtot_b= 256, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, dt=dt_200, configs=[(1,1), (1,2), (1,4), (1,8), (2,8), (4,8), (8,8), (16,8)]),
+        )
+
+    rotated = False
+    for setting in settings:
+        run_weak_scaling(setting, rotated, lfs_c=16, lfs_s='2M')
+
+
+def run_400m_scaling():
+    """
+    400 m, 128 vertical levels.
+    """
+    settings = (
+        dict(name='400_128_8x1',  itot_b=1920, jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=390.625, dt=dt_400, configs=[(1,1), (2,1), (4,1), (8,1)]),
+        dict(name='400_128_16x1', itot_b=960,  jtot_b=1024, ktot=128, npx_b=8, npy_b=16, dxy=390.625, dt=dt_400, configs=[(1,1), (2,1), (4,1), (8,1), (16,1)]),
+        dict(name='400_128_16x2', itot_b=960,  jtot_b= 512, ktot=128, npx_b=8, npy_b=16, dxy=390.625, dt=dt_400, configs=[(1,1), (1,2), (2,2), (4,2), (8,2), (16,2)]),
+        dict(name='400_128_16x4', itot_b=960,  jtot_b= 256, ktot=128, npx_b=8, npy_b=16, dxy=390.625, dt=dt_400, configs=[(1,1), (1,2), (1,4), (2,4), (4,4), (8,4), (16,4)])
+    )
+
+    rotated = False
+    for setting in settings:
+        run_weak_scaling(setting, rotated, lfs_c=16, lfs_s='2M')
+
+
+def run_800m_scaling():
+    """
+    800 m, 128 vertical levels.
+    """
+    settings = (
+        dict(name='800_128_4x1',  itot_b=1920, jtot_b=512, ktot=128, npx_b=8, npy_b=16, dxy=781.25, dt=dt_800, configs=[(1,1), (2,1), (4,1)]),
+        dict(name='800_128_8x1',  itot_b=960,  jtot_b=512, ktot=128, npx_b=8, npy_b=16, dxy=781.25, dt=dt_800, configs=[(1,1), (2,1), (4,1), (8,1)]),
+        dict(name='800_128_16x1', itot_b=480,  jtot_b=512, ktot=128, npx_b=8, npy_b=16, dxy=781.25, dt=dt_800, configs=[(1,1), (2,1), (4,1), (8,1), (16,1)]),
+    )
+
+    rotated = False
+    for setting in settings:
+        run_weak_scaling(setting, rotated, lfs_c=16, lfs_s='2M')
 
 
 
+if __name__ == '__main__':
 
-
-
-
-
-#"""
-#200 m, 128 levels, rotated.
-#"""
-#settings = (
-#    dict(name='200_128_r_1x16',  itot_b=2048, jtot_b=1920, ktot=128, npx_b=16, npy_b=8, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (1,16)]),
-#    dict(name='200_128_r_1x32',  itot_b=2048, jtot_b= 960, ktot=128, npx_b=16, npy_b=8, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32)]),
-#    dict(name='200_128_r_1x64',  itot_b=2048, jtot_b= 480, ktot=128, npx_b=16, npy_b=8, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32), (1,64)]),
-#    dict(name='200_128_r_1x128', itot_b=2048, jtot_b= 240, ktot=128, npx_b=16, npy_b=8, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32), (1,64), (1,128)]),
-#    )
-#
-#for setting in settings:
-#    run_weak_scaling(setting, True)
-#
-#
-#"""
-#400 m, 128 vertical levels, rotated.
-#"""
-#settings = (
-#    dict(name='400_128_r_1x16', itot_b=1024, jtot_b=960, ktot=128, npx_b=16, npy_b=8, dxy=390.625, configs=[(1,1), (1,2), (1,4), (1,8), (1,16)]),
-#    dict(name='400_128_r_1x32', itot_b=1024, jtot_b=480, ktot=128, npx_b=16, npy_b=8, dxy=390.625, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32)]),
-#    dict(name='400_128_r_1x64', itot_b=1024, jtot_b=240, ktot=128, npx_b=16, npy_b=8, dxy=390.625, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32), (1,64)]),
-#    )
-#
-#for setting in settings:
-#    run_weak_scaling(setting, True)
-#
-#"""
-#200 m, 144 levels, rotated.
-#"""
-#settings = (
-#    dict(name='200_144_r_1x16',  itot_b=2048, jtot_b=1920, ktot=144, npx_b=16, npy_b=8, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (1,16)]),
-#    dict(name='200_144_r_1x32',  itot_b=2048, jtot_b= 960, ktot=144, npx_b=16, npy_b=8, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32)]),
-#    dict(name='200_144_r_1x64',  itot_b=2048, jtot_b= 480, ktot=144, npx_b=16, npy_b=8, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32), (1,64)]),
-#    dict(name='200_144_r_1x128', itot_b=2048, jtot_b= 240, ktot=144, npx_b=16, npy_b=8, dxy=195.3125, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32), (1,64), (1,128)]),
-#    )
-#
-#for setting in settings:
-#    run_weak_scaling(setting, True)
-#
-#
-#"""
-#400 m, 144 levels, rotated.
-#"""
-#settings = (
-#    dict(name='400_144_r_1x16', itot_b=1024, jtot_b=960, ktot=144, npx_b=16, npy_b=8, dxy=390.625, configs=[(1,1), (1,2), (1,4), (1,8), (1,16)]),
-#    dict(name='400_144_r_1x32', itot_b=1024, jtot_b=480, ktot=144, npx_b=16, npy_b=8, dxy=390.625, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32)]),
-#    dict(name='400_144_r_1x64', itot_b=1024, jtot_b=240, ktot=144, npx_b=16, npy_b=8, dxy=390.625, configs=[(1,1), (1,2), (1,4), (1,8), (1,16), (1,32), (1,64)]),
-#    )
-#
-#for setting in settings:
-#    run_weak_scaling(setting, True)
+    run_200m_scaling()
+    #run_400m_scaling()
+    #run_800m_scaling()
