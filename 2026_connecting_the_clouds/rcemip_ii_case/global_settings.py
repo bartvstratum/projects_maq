@@ -60,7 +60,7 @@ elif system == 'lumi':
     gpt_path = '/users/stratumv/meteo/models/coefficients_veerman'
     microhh_path = '/users/stratumv/meteo/models/microhh'
     microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh'
-    work_dir = f'/scratch/{project}/mock_walker_scaling_v5'
+    work_dir = f'/scratch/{project}/mock_walker_scaling_v3'
 
     # Default serial I/O (single task) for cross-sections.
     #microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi_serialio/microhh'
