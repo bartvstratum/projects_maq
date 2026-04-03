@@ -296,16 +296,26 @@ def rcemip_ii_input(
             f.write(f'#SBATCH --error={work_dir}/mhh-%j.err\n')
             f.write(f'#SBATCH --partition={partition}\n')
             f.write(f'#SBATCH --ntasks={npx*npy}\n')
-            f.write(f'#SBATCH --cpus-per-task=1\n')
+
+            if partition == 'gpu_h100' or partition == 'gpu_a100':
+                f.write(f'#SBATCH --cpus-per-task=16\n')
+                f.write(f'#SBATCH --gpus-per-node=1\n')
+            else:
+                f.write(f'#SBATCH --cpus-per-task=1\n')
+
             f.write(f'#SBATCH --ntasks-per-core=1\n')
-            f.write(f'#SBATCH --mem=224G\n')
+
+            if partition == 'standard':
+                f.write(f'#SBATCH --mem=224G\n')
+
             f.write(f'#SBATCH --time={wc_time}\n\n')
 
             f.write(f'source ~/setup_env.sh\n\n')
 
             f.write(f'cd {work_dir}\n\n')
 
-            f.write('export FI_CXI_RX_MATCH_MODE=hybrid\n\n')
+            if partition == 'standard':
+                f.write('export FI_CXI_RX_MATCH_MODE=hybrid\n\n')
 
             if lfs_c is not None and lfs_s is not None:
                 f.write(f'lfs setstripe -c {lfs_c} -S {lfs_s} {work_dir}\n\n')
