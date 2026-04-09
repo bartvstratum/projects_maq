@@ -20,7 +20,7 @@
 #  along with MicroHH.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-system = 'snellius2'
+system = 'snellius'
 
 if system == 'eddy':
     project = None
@@ -32,11 +32,11 @@ if system == 'eddy':
 
 elif system == 'snellius':  # MAQ account
     project = None
-    partition = 'rome'
+    partition = 'gpu_h100'
     gpt_path = '/gpfs/work3/0/lesmodels/team_bart/coefficients_veerman'
     microhh_path = '/home/bstratum/meteo/models/microhh'
-    microhh_bin = '/home/bstratum/meteo/models/microhh/build_sp_cpumpi/microhh'
-    work_dir = '/scratch-shared/bstratum/mock_walker_test'
+    microhh_bin = '/home/bstratum/meteo/models/microhh/build_sp_gpu_kl/microhh'
+    work_dir = '/scratch-shared/bstratum/rcemip-ii_resolution'
 
 elif system == 'snellius2':  # Ruisdael account
     project = None
@@ -60,7 +60,7 @@ elif system == 'lumi':
     gpt_path = '/users/stratumv/meteo/models/coefficients_veerman'
     microhh_path = '/users/stratumv/meteo/models/microhh'
     microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh'
-    work_dir = f'/scratch/{project}/mock_walker_scaling_v5'
+    work_dir = f'/scratch/{project}/mock_walker_scaling_v3'
 
     # Default serial I/O (single task) for cross-sections.
     #microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi_serialio/microhh'
