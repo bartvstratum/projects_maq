@@ -43,17 +43,16 @@ ps = 101480
 """
 Horizontal grid.
 """
-xsize = 512*200
-ysize = 512*200
+xsize = 64*200
+ysize = 64*200
 
-itot = 512
-jtot = 512
+itot = 64
+jtot = 64
 
-npx = 1
-npy = 1
+npx = 2
+npy = 2
 
 """
-
 # Full domain, 800 m resolution.
 itot = 7680
 jtot = 512
@@ -66,7 +65,6 @@ ysize = jtot*dxy
 npx = 64
 npy = 16
 
-"""
 # Full domain, 400 m resolution.
 # 128 x 32 :  15360 x  1024 x 128 @ 128 x  32, #/core = 491520.0
 xsize = 15360*400
@@ -77,9 +75,7 @@ jtot = 1024
 
 npx = 128
 npy = 32
-"""
 
-"""
 # Full domain, 200 m resolution.
 # 128 x 32 :  30720 x  2048 x 128 @ 128 x  32, #/core = 1966080.0
 xsize = 30720*200
@@ -93,7 +89,7 @@ npy = 32
 """
 
 #endtime = 10*24*3600
-endtime = 12*3600
+endtime = 1*3600
 
 """
 # Official RCEMIP LES grid
@@ -129,7 +125,6 @@ grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
 z = grid.z
 zsize = grid.zsize
 
-
 # G-point sets from Veerman (2024).
 # For now the cheapest for testing. TBD with Martin/Menno.
 coef_sw = 'rrtmgp-gas-sw-g049-cf2.nc'
@@ -138,6 +133,7 @@ coef_lw = 'rrtmgp-gas-lw-g056-cf2.nc'
 name = 'rcemip_ii'
 create_slurm_script = True
 wc_time = '48:00:00'
+dt_max = None
 
 if not os.path.exists(settings.work_dir):
     os.makedirs(settings.work_dir)

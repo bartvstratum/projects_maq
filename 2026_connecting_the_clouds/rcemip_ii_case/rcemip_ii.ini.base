@@ -21,7 +21,7 @@ stop[qt]=0.0
 z0m=-1
 z0h=-1
 swconstantz0=False
-swcharnock=True
+swcharnock=true
 alpha_m=0.11
 alpha_ch=0.018
 # NOTE: we have a single `z0h` and not `z0h` and `z0q` at the moment.
@@ -29,14 +29,14 @@ alpha_ch=0.018
 alpha_h=0.50
 
 [buffer]
-swbuffer=True
-swupdate=True
+swbuffer=true
+swupdate=true
 zstart=None
 sigma=0.00223
 beta=2.0
 
 [cross]
-swcross=True
+swcross=true
 xy=0,31750
 xz=0
 sampletime=900
@@ -45,6 +45,14 @@ crosslist=sw_flux_up,sw_flux_dn,lw_flux_up,lw_flux_dn,sw_flux_up_clear,sw_flux_d
 [diff]
 swdiff=smag2
 dnmax=0.25
+
+[dump]
+swdump=true
+sampletime=60
+dumplist=u,v,w,thl,qt,ql,qi,qr,qs,qg
+dumplist_coarse=u,v,w,thl,qt,ql,qi,qr,qs,qg
+ratio_x=4
+ratio_y=4
 
 [fields]
 visc=1e-05
@@ -80,8 +88,8 @@ Nc0=100000000
 
 [radiation]
 swradiation=rrtmgp
-swlongwave=True
-swshortwave=True
+swlongwave=true
+swshortwave=true
 dt_rad=900
 t_sfc=300.0
 emis_sfc=1.0
@@ -89,10 +97,10 @@ sza=0.7339109504636155
 tsi_scaling=0.4053176301654965
 sfc_alb_dir=0.07
 sfc_alb_dif=0.07
-swclearskystats=True
+swclearskystats=true
 
 [stats]
-swstats=True
+swstats=true
 swtendency=False
 sampletime=900
 
@@ -100,7 +108,7 @@ sampletime=900
 swthermo=moist
 swbasestate=anelastic
 pbot=None
-swupdatebasestate=True
+swupdatebasestate=true
 
 [time]
 starttime=0
@@ -109,6 +117,6 @@ dt=6.0
 dtmax=60
 savetime=21600
 outputiter=1
-adaptivestep=True
+adaptivestep=true
 rkorder=3
 iotimeprec=1

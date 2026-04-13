@@ -20,15 +20,15 @@
 #  along with MicroHH.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-system = 'snellius'
+system = 'eddy'
 
 if system == 'eddy':
     project = None
     partition = None
     gpt_path = '/home/bart/meteo/models/coefficients_veerman/' 
     microhh_path = '/home/bart/meteo/models/microhh/'
-    microhh_bin = '/home/bart/meteo/models/microhh/build_sp_cpumpi/microhh'
-    work_dir = 'test_200m'
+    microhh_bin = '/home/bart/meteo/models/microhh/build_spdp_cpumpi/microhh'
+    work_dir = 'test_dump'
 
 elif system == 'snellius':  # MAQ account
     project = None
