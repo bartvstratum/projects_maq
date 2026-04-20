@@ -1,0 +1,528 @@
+Starting run on 4096 processes
+Microhh git-hash: 2.0.1-44-gf908ceaa
+Precision: Single (32-bits floats)
+Precision FFT+TDMA: Double (64-bits floats)
+Simulation name: rcemip_ii
+Simulation mode: init
+[grid][xsize]                 =       6e+06
+[grid][ysize]                 =       4e+05
+[grid][zsize]                 =       32344
+[grid][itot]                  =       15360
+[grid][jtot]                  =        1024
+[grid][ktot]                  =         128
+[grid][utrans]                =           0   
+[grid][vtrans]                =           0   
+[grid][lat]                   =       -9999   (default)
+[grid][lon]                   =       -9999   (default)
+[grid][swspatialorder]        =           2
+[boundary][swboundary]        =     surface   
+[fields][visc]                =           0
+[fields][slist]               =  EMPTY LIST   (default)
+[stats][xymasklist]           =  EMPTY LIST   (default)
+[time][endtime]               =          60
+[time][savetime]              =       21600
+[time][adaptivestep]          =           1   
+[time][dtmax]                 =         5.1   
+[time][dt]                    =           6   
+[time][rkorder]               =           3   
+[time][outputiter]            =           1   
+[time][iotimeprec]            =           1   
+[time][datetime_utc]          =               (default)
+[boundary][swboundary]        =     surface   
+[boundary][scalar_outflow]    =  EMPTY LIST   (default)
+[advec][swadvec]              =         2i5   
+[advec][cflmax]               =         1.2   
+[advec][fluxlimit_list]       = qt,qr,qs,qg
+[diff][swdiff]                =       smag2   
+[boundary][swboundary]        =     surface   
+[diff][dnmax]                 =        0.25   
+[diff][cs]                    =        0.23   (default)
+[diff][tPr]                   =     0.33333   (default)
+[diff][swmason]               =           1   (default)
+[pres][swpres]                =           2   (default)
+[thermo][swthermo]            =       moist   
+[fields][svisc][thl]          =           0
+[fields][svisc][qt]           =           0
+[thermo][pbot]                =  1.0148e+05
+[thermo][swbasestate]         =   anelastic   
+[thermo][swupdatebasestate]   =           1   
+[thermo][swtimedep_pbot]      =           0   (default)
+[micro][swmicro]              =        nsw6   
+[micro][cflmax]               =         1.2   
+[micro][Nc0]                  =       1e+08
+[fields][svisc][qr]           =           0
+[fields][svisc][qg]           =           0
+[fields][svisc][qs]           =           0
+[radiation][swradiation]      =           0   
+[force][swlspres]             =           0   (default)
+[force][swwls]                =           0   (default)
+[force][swnudge]              =           0   (default)
+[force][swls]                 =           0   (default)
+[force][swtimedep_wls]        =           0   (default)
+[buffer][swbuffer]            =           1   
+[buffer][swupdate]            =           1   
+[buffer][zstart]              =       24258
+[buffer][sigma]               =     0.00223   
+[buffer][beta]                =           2   
+[limiter][limitlist]          = qt,qs,qg,qr
+[source][swsource]            =           0   (default)
+[aerosol][swaerosol]          =           0   (default)
+[aerosol][swtimedep]          =           0   (default)
+[radiation][swtimedep_background]=           0   (default)
+[particle_bin][sw_particle]   =           0   (default)
+[IB][sw_immersed_boundary]    =           0   (default)
+[stats][swstats]              =           1   
+[stats][sampletime]           =         900
+[stats][masklist]             =  EMPTY LIST   (default)
+[stats][xymasklist]           =  EMPTY LIST   (default)
+[stats][swtendency]           =           0   
+[stats][whitelist]            =  EMPTY LIST   (default)
+[stats][blacklist]            =  EMPTY LIST   (default)
+[column][swcolumn]            =           0   (default)
+[dump][swdump]                =           1   
+[dump][sampletime]            =          60
+[dump][dumplist]              = u,v,w,thl,qt,ql,qi,qr,qs,qg
+[dump][dumplist_coarse]       = u,v,w,thl,qt,ql,qi,qr,qs,qg
+[dump][swdoubledump]          =           0   (default)
+[dump][ratio_x]               =           8
+[dump][ratio_y]               =           8
+[cross][swcross]              =           1   
+[cross][sampletime]           =          60
+[cross][crosslist]            = sw_flux_up,sw_flux_dn,lw_flux_up,lw_flux_dn,sw_flux_up_clear,sw_flux_dn_clear,lw_flux_up_clear,lw_flux_dn_clear,qt_fluxbot,thl_fluxbot,qt_path,ql_path,qi_path,qr_path,qs_path,qg_path,qlqi_path,qsat_path,u,v,w,thl,qt,w500hpa,rr_bot,z0h,z0m
+[cross][xy]                   =     0,31750
+[cross][xz]                   =           0
+[cross][yz]                   =  EMPTY LIST   (default)
+[cross][xy_soil]              =  EMPTY LIST   (default)
+[cross][crosslist_coarse]     = qt_path,ql_path,qi_path,qr_path,qs_path,qg_path,qlqi_path,qsat_path
+[cross][ratio_x]              =           8
+[cross][ratio_y]              =           8
+[budget][swbudget]            =           0   (default)
+[master][npx]                 =         128   
+[master][npy]                 =          32   
+[master][wallclocklimit]      =       1e+08   (default)
+Allocating temporary field: tmp1
+Allocating temporary field: tmp2
+Allocating temporary field: tmp3
+Allocating temporary field: tmp4
+[boundary][mbcbot]            =      noslip
+[boundary][mbctop]            =    freeslip
+[boundary][ubot]              =           0   (default)
+[boundary][utop]              =           0   (default)
+[boundary][vbot]              =           0   (default)
+[boundary][vtop]              =           0   (default)
+[boundary][sbcbot][qg]        =   dirichlet
+[boundary][sbctop][qg]        =     neumann
+[boundary][sbot][qg]          =           0
+[boundary][stop][qg]          =           0
+[boundary][sbcbot][qr]        =   dirichlet
+[boundary][sbctop][qr]        =     neumann
+[boundary][sbot][qr]          =           0
+[boundary][stop][qr]          =           0
+[boundary][sbcbot][qs]        =   dirichlet
+[boundary][sbctop][qs]        =     neumann
+[boundary][sbot][qs]          =           0
+[boundary][stop][qs]          =           0
+[boundary][sbcbot][qt]        =   dirichlet
+[boundary][sbctop][qt]        =     neumann
+[boundary][sbot][qt]          =    0.021947
+[boundary][stop][qt]          =           0
+[boundary][sbcbot][thl]       =   dirichlet
+[boundary][sbctop][thl]       =     neumann
+[boundary][sbot][thl]         =      298.74
+[boundary][stop][thl]         =           0
+[boundary][sbot_2d_list]      =  EMPTY LIST   (default)
+[boundary][scalar_outflow]    =  EMPTY LIST   (default)
+[boundary][swconstantz0]      =           0   
+[boundary][swcharnock]        =           1   
+[boundary][alpha_m]           =        0.11
+[boundary][alpha_ch]          =       0.018
+[boundary][alpha_h]           =         0.5
+[decay][swdecay][qg]          =           0   (default)
+[decay][swdecay][qr]          =           0   (default)
+[decay][swdecay][qs]          =           0   (default)
+[decay][swdecay][qt]          =           0   (default)
+[decay][swdecay][thl]         =           0   (default)
+[fields][rndseed]             =           2   
+[fields][rndamp][u]           =           0   (default)
+[fields][rndz][u]             =         300   
+[fields][rndexp][u]           =           2   
+[fields][rndamp][w]           =           0   (default)
+[fields][rndz][w]             =         300   
+[fields][rndexp][w]           =           2   
+[fields][rndamp][v]           =           0   (default)
+[fields][rndz][v]             =         300   
+[fields][rndexp][v]           =           2   
+[fields][rndamp][qg]          =           0   (default)
+[fields][rndz][qg]            =         300   
+[fields][rndexp][qg]          =           2   
+[fields][rndamp][qr]          =           0   (default)
+[fields][rndz][qr]            =         300   
+[fields][rndexp][qr]          =           2   
+[fields][rndamp][qs]          =           0   (default)
+[fields][rndz][qs]            =         300   
+[fields][rndexp][qs]          =           2   
+[fields][rndamp][qt]          =     2.5e-05   
+[fields][rndz][qt]            =         300   
+[fields][rndexp][qt]          =           2   
+[fields][rndamp][thl]         =         0.1   
+[fields][rndz][thl]           =         300   
+[fields][rndexp][thl]         =           2   
+[fields][vortexnpair]         =           0   (default)
+[fields][vortexamp]           =       0.001   (default)
+[fields][vortexaxis]          =           y   (default)
+WARNING: Netcdf variable u not found, filling with zeros
+WARNING: Netcdf variable v not found, filling with zeros
+Saving "grid.0000000" ... OK
+Saving "fftwplan.0000000" ... OK
+Saving "qg.0000000" ... qg.0000000: 7.09 GB/s (1.14e+00 s)
+Saving "qr.0000000" ... qr.0000000: 8.08 GB/s (9.97e-01 s)
+Saving "qs.0000000" ... qs.0000000: 6.25 GB/s (1.29e+00 s)
+Saving "qt.0000000" ... qt.0000000: 8.54 GB/s (9.42e-01 s)
+Saving "thl.0000000" ... thl.0000000: 6.86 GB/s (1.17e+00 s)
+Saving "u.0000000" ... u.0000000: 6.94 GB/s (1.16e+00 s)
+Saving "v.0000000" ... v.0000000: 7.43 GB/s (1.08e+00 s)
+Saving "w.0000000" ... w.0000000: 3.24 GB/s (2.49e+00 s)
+Saving "time.0000000" ... OK
+Saving "thermo_basestate.0000000" ... OK
+Saving "thl_bot.0000000" ... thl_bot.0000000: 0.41 GB/s (1.54e-01 s)
+OK
+Saving "qt_bot.0000000" ... qt_bot.0000000: 0.47 GB/s (1.33e-01 s)
+OK
+Saving "rhoref.0000000" ... OK
+Saving "dudz_mo.0000000" ... dudz_mo.0000000: 0.31 GB/s (2.03e-01 s)
+OK
+Saving "dvdz_mo.0000000" ... dvdz_mo.0000000: 0.43 GB/s (1.46e-01 s)
+OK
+Saving "dbdz_mo.0000000" ... dbdz_mo.0000000: 0.46 GB/s (1.38e-01 s)
+OK
+Saving "obuk.0000000" ... obuk.0000000: 0.49 GB/s (1.30e-01 s)
+OK
+WARNING: [boundary][z0h] is not used!
+WARNING: [boundary][z0m] is not used!
+WARNING: [radiation][dt_rad] is not used!
+WARNING: [radiation][emis_sfc] is not used!
+WARNING: [radiation][sfc_alb_dif] is not used!
+WARNING: [radiation][sfc_alb_dir] is not used!
+WARNING: [radiation][swclearskystats] is not used!
+WARNING: [radiation][swlongwave] is not used!
+WARNING: [radiation][swshortwave] is not used!
+WARNING: [radiation][sza] is not used!
+WARNING: [radiation][t_sfc] is not used!
+WARNING: [radiation][tsi_scaling] is not used!
+Finished run on 4096 processes
+Starting run on 4096 processes
+Microhh git-hash: 2.0.1-44-gf908ceaa
+Precision: Single (32-bits floats)
+Precision FFT+TDMA: Double (64-bits floats)
+Simulation name: rcemip_ii
+Simulation mode: run
+[grid][xsize]                 =       6e+06
+[grid][ysize]                 =       4e+05
+[grid][zsize]                 =       32344
+[grid][itot]                  =       15360
+[grid][jtot]                  =        1024
+[grid][ktot]                  =         128
+[grid][utrans]                =           0   
+[grid][vtrans]                =           0   
+[grid][lat]                   =       -9999   (default)
+[grid][lon]                   =       -9999   (default)
+[grid][swspatialorder]        =           2
+[boundary][swboundary]        =     surface   
+[fields][visc]                =           0
+[fields][slist]               =  EMPTY LIST   (default)
+[stats][xymasklist]           =  EMPTY LIST   (default)
+[time][starttime]             =           0
+[time][endtime]               =          60
+[time][savetime]              =       21600
+[time][adaptivestep]          =           1   
+[time][dtmax]                 =         5.1   
+[time][dt]                    =           6   
+[time][rkorder]               =           3   
+[time][outputiter]            =           1   
+[time][iotimeprec]            =           1   
+[time][datetime_utc]          =               (default)
+[boundary][swboundary]        =     surface   
+[boundary][scalar_outflow]    =  EMPTY LIST   (default)
+[advec][swadvec]              =         2i5   
+[advec][cflmax]               =         1.2   
+[advec][fluxlimit_list]       = qt,qr,qs,qg
+[diff][swdiff]                =       smag2   
+[boundary][swboundary]        =     surface   
+[diff][dnmax]                 =        0.25   
+[diff][cs]                    =        0.23   (default)
+[diff][tPr]                   =     0.33333   (default)
+[diff][swmason]               =           1   (default)
+[pres][swpres]                =           2   (default)
+[thermo][swthermo]            =       moist   
+[fields][svisc][thl]          =           0
+[fields][svisc][qt]           =           0
+[thermo][pbot]                =  1.0148e+05
+[thermo][swbasestate]         =   anelastic   
+[thermo][swupdatebasestate]   =           1   
+[thermo][swtimedep_pbot]      =           0   (default)
+[micro][swmicro]              =        nsw6   
+[micro][cflmax]               =         1.2   
+[micro][Nc0]                  =       1e+08
+[fields][svisc][qr]           =           0
+[fields][svisc][qg]           =           0
+[fields][svisc][qs]           =           0
+[radiation][swradiation]      =           0   
+[force][swlspres]             =           0   (default)
+[force][swwls]                =           0   (default)
+[force][swnudge]              =           0   (default)
+[force][swls]                 =           0   (default)
+[force][swtimedep_wls]        =           0   (default)
+[buffer][swbuffer]            =           1   
+[buffer][swupdate]            =           1   
+[buffer][zstart]              =       24258
+[buffer][sigma]               =     0.00223   
+[buffer][beta]                =           2   
+[limiter][limitlist]          = qt,qs,qg,qr
+[source][swsource]            =           0   (default)
+[aerosol][swaerosol]          =           0   (default)
+[aerosol][swtimedep]          =           0   (default)
+[radiation][swtimedep_background]=           0   (default)
+[particle_bin][sw_particle]   =           0   (default)
+[IB][sw_immersed_boundary]    =           0   (default)
+[stats][swstats]              =           1   
+[stats][sampletime]           =         900
+[stats][masklist]             =  EMPTY LIST   (default)
+[stats][xymasklist]           =  EMPTY LIST   (default)
+[stats][swtendency]           =           0   
+[stats][whitelist]            =  EMPTY LIST   (default)
+[stats][blacklist]            =  EMPTY LIST   (default)
+[column][swcolumn]            =           0   (default)
+[dump][swdump]                =           1   
+[dump][sampletime]            =          60
+[dump][dumplist]              = u,v,w,thl,qt,ql,qi,qr,qs,qg
+[dump][dumplist_coarse]       = u,v,w,thl,qt,ql,qi,qr,qs,qg
+[dump][swdoubledump]          =           0   (default)
+[dump][ratio_x]               =           8
+[dump][ratio_y]               =           8
+[cross][swcross]              =           1   
+[cross][sampletime]           =          60
+[cross][crosslist]            = sw_flux_up,sw_flux_dn,lw_flux_up,lw_flux_dn,sw_flux_up_clear,sw_flux_dn_clear,lw_flux_up_clear,lw_flux_dn_clear,qt_fluxbot,thl_fluxbot,qt_path,ql_path,qi_path,qr_path,qs_path,qg_path,qlqi_path,qsat_path,u,v,w,thl,qt,w500hpa,rr_bot,z0h,z0m
+[cross][xy]                   =     0,31750
+[cross][xz]                   =           0
+[cross][yz]                   =  EMPTY LIST   (default)
+[cross][xy_soil]              =  EMPTY LIST   (default)
+[cross][crosslist_coarse]     = qt_path,ql_path,qi_path,qr_path,qs_path,qg_path,qlqi_path,qsat_path
+[cross][ratio_x]              =           8
+[cross][ratio_y]              =           8
+[budget][swbudget]            =           0   (default)
+[master][npx]                 =         128   
+[master][npy]                 =          32   
+[master][wallclocklimit]      =       1e+08   (default)
+Allocating temporary field: tmp1
+Allocating temporary field: tmp2
+Allocating temporary field: tmp3
+Allocating temporary field: tmp4
+[boundary][mbcbot]            =      noslip
+[boundary][mbctop]            =    freeslip
+[boundary][ubot]              =           0   (default)
+[boundary][utop]              =           0   (default)
+[boundary][vbot]              =           0   (default)
+[boundary][vtop]              =           0   (default)
+[boundary][sbcbot][qg]        =   dirichlet
+[boundary][sbctop][qg]        =     neumann
+[boundary][sbot][qg]          =           0
+[boundary][stop][qg]          =           0
+[boundary][sbcbot][qr]        =   dirichlet
+[boundary][sbctop][qr]        =     neumann
+[boundary][sbot][qr]          =           0
+[boundary][stop][qr]          =           0
+[boundary][sbcbot][qs]        =   dirichlet
+[boundary][sbctop][qs]        =     neumann
+[boundary][sbot][qs]          =           0
+[boundary][stop][qs]          =           0
+[boundary][sbcbot][qt]        =   dirichlet
+[boundary][sbctop][qt]        =     neumann
+[boundary][sbot][qt]          =    0.021947
+[boundary][stop][qt]          =           0
+[boundary][sbcbot][thl]       =   dirichlet
+[boundary][sbctop][thl]       =     neumann
+[boundary][sbot][thl]         =      298.74
+[boundary][stop][thl]         =           0
+[boundary][sbot_2d_list]      =  EMPTY LIST   (default)
+[boundary][scalar_outflow]    =  EMPTY LIST   (default)
+[boundary][swconstantz0]      =           0   
+[boundary][swcharnock]        =           1   
+[boundary][alpha_m]           =        0.11
+[boundary][alpha_ch]          =       0.018
+[boundary][alpha_h]           =         0.5
+[decay][swdecay][qg]          =           0   (default)
+[decay][swdecay][qr]          =           0   (default)
+[decay][swdecay][qs]          =           0   (default)
+[decay][swdecay][qt]          =           0   (default)
+[decay][swdecay][thl]         =           0   (default)
+Loading "grid.0000000" ... OK
+[grid][swtimedep]             =           0   (default)
+Loading "fftwplan.0000000" ... OK
+Loading "time.0000000" ... OK
+Loading "qg.0000000" ... qg.0000000: 8.68 GB/s (9.28e-01 s)
+OK
+Loading "qr.0000000" ... qr.0000000: 8.54 GB/s (9.43e-01 s)
+OK
+Loading "qs.0000000" ... qs.0000000: 7.27 GB/s (1.11e+00 s)
+OK
+Loading "qt.0000000" ... qt.0000000: 6.54 GB/s (1.23e+00 s)
+OK
+Loading "thl.0000000" ... thl.0000000: 6.90 GB/s (1.17e+00 s)
+OK
+Loading "u.0000000" ... u.0000000: 3.60 GB/s (2.24e+00 s)
+OK
+Loading "v.0000000" ... v.0000000: 5.65 GB/s (1.42e+00 s)
+OK
+Loading "w.0000000" ... w.0000000: 6.22 GB/s (1.29e+00 s)
+OK
+Loading "rhoref.0000000" ... OK
+Loading "thermo_basestate.0000000" ... OK
+Loading "thl_bot.0000000" ... OK
+Loading "qt_bot.0000000" ... OK
+Loading "dudz_mo.0000000" ... OK
+Loading "dvdz_mo.0000000" ... OK
+Loading "dbdz_mo.0000000" ... OK
+Loading "obuk.0000000" ... OK
+[boundary][swtimedep]         =           0   (default)
+[boundary][timedeplist]       =  EMPTY LIST   (default)
+[boundary][swtimedep_sbot_2d] =           0   (default)
+[boundary][swtimedep_outflow] =           0   (default)
+Added XZ cross at y=195.312500 (j=0) for [cross][xz]=0.000000
+Added XZ cross at yh=195.312500 (j=0) for [cross][xz]=0.000000
+Added XY cross at z=20.000000 (k=0) for [cross][xy]=0.000000
+Added XY cross at zh=0.000000 (k=0) for [cross][xy]=0.000000
+Added XY cross at z=31815.039062 (k=127) for [cross][xy]=31750.000000
+Added XY cross at zh=31286.390625 (k=127) for [cross][xy]=31750.000000
+WARNING: field sw_flux_up in [cross][crosslist] is illegal
+WARNING: field sw_flux_dn in [cross][crosslist] is illegal
+WARNING: field lw_flux_up in [cross][crosslist] is illegal
+WARNING: field lw_flux_dn in [cross][crosslist] is illegal
+WARNING: field sw_flux_up_clear in [cross][crosslist] is illegal
+WARNING: field sw_flux_dn_clear in [cross][crosslist] is illegal
+WARNING: field lw_flux_up_clear in [cross][crosslist] is illegal
+WARNING: field lw_flux_dn_clear in [cross][crosslist] is illegal
+WARNING: [boundary][z0h] is not used!
+WARNING: [boundary][z0m] is not used!
+WARNING: [radiation][dt_rad] is not used!
+WARNING: [radiation][emis_sfc] is not used!
+WARNING: [radiation][sfc_alb_dif] is not used!
+WARNING: [radiation][sfc_alb_dir] is not used!
+WARNING: [radiation][swclearskystats] is not used!
+WARNING: [radiation][swlongwave] is not used!
+WARNING: [radiation][swshortwave] is not used!
+WARNING: [radiation][sza] is not used!
+WARNING: [radiation][t_sfc] is not used!
+WARNING: [radiation][tsi_scaling] is not used!
+Starting time integration
+Saving statistics for time 0.000000
+Saving cross-sections for time 0.000000
+qt.xz.000.00000.0000000: 1.03 GB/s (6.11e-02 s)
+qt.xy.000.00000.0000000: 0.18 GB/s (3.51e-01 s)
+qt.xy.000.00127.0000000: 0.26 GB/s (2.37e-01 s)
+thl.xz.000.00000.0000000: 3.39 GB/s (1.86e-02 s)
+thl.xy.000.00000.0000000: 0.23 GB/s (2.78e-01 s)
+thl.xy.000.00127.0000000: 0.35 GB/s (1.78e-01 s)
+u.xz.100.00000.0000000: 0.78 GB/s (8.08e-02 s)
+u.xy.100.00000.0000000: 0.16 GB/s (3.83e-01 s)
+u.xy.100.00127.0000000: 0.47 GB/s (1.34e-01 s)
+v.xz.010.00000.0000000: 0.54 GB/s (1.16e-01 s)
+v.xy.010.00000.0000000: 0.15 GB/s (4.14e-01 s)
+v.xy.010.00127.0000000: 0.28 GB/s (2.22e-01 s)
+w.xz.001.00000.0000000: 0.71 GB/s (8.82e-02 s)
+w.xy.001.00000.0000000: 0.40 GB/s (1.56e-01 s)
+w.xy.001.00127.0000000: 0.35 GB/s (1.78e-01 s)
+qt_fluxbot.xy.000.0000000: 0.40 GB/s (1.59e-01 s)
+thl_fluxbot.xy.000.0000000: 0.39 GB/s (1.63e-01 s)
+qg_path.xy.000.0000000: 0.36 GB/s (1.73e-01 s)
+qg_path.xy_c.000.0000000: 0.06 GB/s (1.52e-02 s)
+qr_path.xy.000.0000000: 0.40 GB/s (1.56e-01 s)
+qr_path.xy_c.000.0000000: 0.06 GB/s (1.74e-02 s)
+qs_path.xy.000.0000000: 0.47 GB/s (1.34e-01 s)
+qs_path.xy_c.000.0000000: 0.09 GB/s (1.15e-02 s)
+qt_path.xy.000.0000000: 0.51 GB/s (1.23e-01 s)
+qt_path.xy_c.000.0000000: 0.03 GB/s (3.33e-02 s)
+ql_path.xy.000.0000000: 0.58 GB/s (1.09e-01 s)
+ql_path.xy_c.000.0000000: 0.02 GB/s (4.13e-02 s)
+qi_path.xy.000.0000000: 0.32 GB/s (1.96e-01 s)
+qi_path.xy_c.000.0000000: 0.06 GB/s (1.52e-02 s)
+qlqi_path.xy.000.0000000: 0.38 GB/s (1.66e-01 s)
+qlqi_path.xy_c.000.0000000: 0.20 GB/s (4.95e-03 s)
+qsat_path.xy.000.0000000: 0.52 GB/s (1.21e-01 s)
+qsat_path.xy_c.000.0000000: 0.08 GB/s (1.18e-02 s)
+w500hpa.xy.000.0000000: 0.43 GB/s (1.46e-01 s)
+rr_bot.xy.000.0000000: 0.29 GB/s (2.17e-01 s)
+z0h.xy.000.0000000: 0.50 GB/s (1.26e-01 s)
+z0m.xy.000.0000000: 0.21 GB/s (3.05e-01 s)
+Saving field dumps for time 0.000000
+u.0000000 already exists
+v.0000000 already exists
+w.0000000 already exists
+thl.0000000 already exists
+qt.0000000 already exists
+qr.0000000 already exists
+qs.0000000 already exists
+qg.0000000 already exists
+ql.0000000: 8.31 GB/s (9.69e-01 s)
+ql_c.0000000: 0.21 GB/s (5.95e-01 s)
+qi.0000000: 7.72 GB/s (1.04e+00 s)
+qi_c.0000000: 0.34 GB/s (3.71e-01 s)
+Saving cross-sections for time 60.000000
+qt.xz.000.00000.0000006: 3.25 GB/s (1.94e-02 s)
+qt.xy.000.00000.0000006: 0.20 GB/s (3.09e-01 s)
+qt.xy.000.00127.0000006: 0.19 GB/s (3.29e-01 s)
+thl.xz.000.00000.0000006: 0.98 GB/s (6.42e-02 s)
+thl.xy.000.00000.0000006: 0.41 GB/s (1.54e-01 s)
+thl.xy.000.00127.0000006: 0.63 GB/s (1.00e-01 s)
+u.xz.100.00000.0000006: 4.64 GB/s (1.36e-02 s)
+u.xy.100.00000.0000006: 0.40 GB/s (1.56e-01 s)
+u.xy.100.00127.0000006: 0.40 GB/s (1.59e-01 s)
+v.xz.010.00000.0000006: 0.64 GB/s (9.79e-02 s)
+v.xy.010.00000.0000006: 0.40 GB/s (1.59e-01 s)
+v.xy.010.00127.0000006: 0.22 GB/s (2.88e-01 s)
+w.xz.001.00000.0000006: 0.59 GB/s (1.07e-01 s)
+w.xy.001.00000.0000006: 0.20 GB/s (3.23e-01 s)
+w.xy.001.00127.0000006: 0.19 GB/s (3.36e-01 s)
+qt_fluxbot.xy.000.0000006: 0.37 GB/s (1.69e-01 s)
+thl_fluxbot.xy.000.0000006: 0.33 GB/s (1.90e-01 s)
+qg_path.xy.000.0000006: 0.45 GB/s (1.41e-01 s)
+qg_path.xy_c.000.0000006: 0.02 GB/s (5.71e-02 s)
+qr_path.xy.000.0000006: 0.51 GB/s (1.22e-01 s)
+qr_path.xy_c.000.0000006: 0.06 GB/s (1.54e-02 s)
+qs_path.xy.000.0000006: 0.55 GB/s (1.14e-01 s)
+qs_path.xy_c.000.0000006: 0.04 GB/s (2.57e-02 s)
+qt_path.xy.000.0000006: 0.61 GB/s (1.03e-01 s)
+qt_path.xy_c.000.0000006: 0.01 GB/s (7.13e-02 s)
+ql_path.xy.000.0000006: 0.58 GB/s (1.08e-01 s)
+ql_path.xy_c.000.0000006: 0.17 GB/s (5.93e-03 s)
+qi_path.xy.000.0000006: 0.52 GB/s (1.21e-01 s)
+qi_path.xy_c.000.0000006: 0.21 GB/s (4.65e-03 s)
+qlqi_path.xy.000.0000006: 0.51 GB/s (1.23e-01 s)
+qlqi_path.xy_c.000.0000006: 0.21 GB/s (4.70e-03 s)
+qsat_path.xy.000.0000006: 0.50 GB/s (1.26e-01 s)
+qsat_path.xy_c.000.0000006: 0.06 GB/s (1.55e-02 s)
+w500hpa.xy.000.0000006: 0.45 GB/s (1.41e-01 s)
+rr_bot.xy.000.0000006: 0.50 GB/s (1.26e-01 s)
+z0h.xy.000.0000006: 0.50 GB/s (1.26e-01 s)
+z0m.xy.000.0000006: 0.49 GB/s (1.29e-01 s)
+Saving field dumps for time 60.000000
+u.0000006: 8.89 GB/s (9.06e-01 s)
+u_c.0000006: 0.25 GB/s (5.07e-01 s)
+v.0000006: 8.80 GB/s (9.15e-01 s)
+v_c.0000006: 0.22 GB/s (5.75e-01 s)
+w.0000006: 8.74 GB/s (9.21e-01 s)
+w_c.0000006: 0.36 GB/s (3.53e-01 s)
+thl.0000006: 9.28 GB/s (8.67e-01 s)
+thl_c.0000006: 0.35 GB/s (3.60e-01 s)
+qt.0000006: 5.76 GB/s (1.40e+00 s)
+qt_c.0000006: 0.37 GB/s (3.38e-01 s)
+qr.0000006: 8.35 GB/s (9.65e-01 s)
+qr_c.0000006: 0.20 GB/s (6.26e-01 s)
+qs.0000006: 9.02 GB/s (8.93e-01 s)
+qs_c.0000006: 0.27 GB/s (4.70e-01 s)
+qg.0000006: 9.18 GB/s (8.77e-01 s)
+qg_c.0000006: 0.11 GB/s (1.17e+00 s)
+ql.0000006: 6.39 GB/s (1.26e+00 s)
+ql_c.0000006: 0.18 GB/s (6.85e-01 s)
+qi.0000006: 3.84 GB/s (2.10e+00 s)
+qi_c.0000006: 0.18 GB/s (6.90e-01 s)
+Finished run on 4096 processes
