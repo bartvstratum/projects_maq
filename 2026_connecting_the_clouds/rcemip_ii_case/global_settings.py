@@ -20,7 +20,7 @@
 #  along with MicroHH.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-system = 'eddy'
+system = 'lumi'
 
 if system == 'eddy':
     project = None
@@ -60,7 +60,7 @@ elif system == 'lumi':
     gpt_path = '/users/stratumv/meteo/models/coefficients_veerman'
     microhh_path = '/users/stratumv/meteo/models/microhh'
     microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh'
-    work_dir = f'/scratch/{project}/mock_walker_scaling_v3'
+    work_dir = f'/scratch/{project}/mock_walker_io'
 
     # Default serial I/O (single task) for cross-sections.
     #microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi_serialio/microhh'

@@ -42,7 +42,7 @@ sw_cos_sst = False  # False for RCEMIP-I, True for RCEMIP-II
 mean_sst = 300
 d_sst = 2.5
 ps = 101480
-endtime = 900
+endtime = 60
 
 #coef_sw='rrtmgp-gas-sw-g049-cf2.nc'
 #coef_lw='rrtmgp-gas-lw-g056-cf2.nc'
@@ -51,7 +51,7 @@ coef_sw = 'rrtmgp-gas-sw-g112.nc'
 coef_lw = 'rrtmgp-gas-lw-g128.nc'
 
 create_slurm_script = True
-wc_time = '06:00:00'
+wc_time = '00:30:00'
 
 """
 Scaling uses a fixed time step.
@@ -104,6 +104,14 @@ def run_scaling(exp_settings, rotated_domain=False, lfs_c=1, lfs_s='1M'):
         case_name = f'{name}_{nn_x}x{nn_y}'
         case_path = f'{env.work_dir}/{name}/{nn_x}x{nn_y}'
 
+        # Coarse-graining cross and dump, all to same output resolution.
+        if exp_settings['dxy'] < 200:
+            ratio_x = ratio_y = 16
+        elif exp_settings['dxy'] < 400:
+            ratio_x = ratio_y = 8
+        else:
+            ratio_x = ratio_y = 4
+
         if os.path.exists(case_path):
             print('Case already exists! Skipping...')
         else:
@@ -140,6 +148,8 @@ def run_scaling(exp_settings, rotated_domain=False, lfs_c=1, lfs_s='1M'):
                     lfs_c,
                     lfs_s,
                     dt_max,
+                    ratio_x,
+                    ratio_y,
                     float_type)
 
             subprocess.run(['sbatch', slurm_script], check=True)
@@ -230,12 +240,33 @@ def run_strong_scaling():
         run_scaling(setting, rotated, lfs_c=16, lfs_s='2M')
 
 
+def run_chosen_configs():
+    """
+    Chosen configs for all domains.
+    """
+
+    settings = (
+        dict(name='200_128_16x4', itot_b=1920, jtot_b= 512, ktot=128, npx_b=8, npy_b=16, dxy=195.3125, dt=dt_200, configs=[(16,4)]),
+        #dict(name='400_128_16x2', itot_b=960,  jtot_b=512, ktot=128, npx_b=8, npy_b=16, dxy=390.625, dt=dt_400, configs=[(16,2)]),
+        #dict(name='800_128_16x1', itot_b=480,  jtot_b=512, ktot=128, npx_b=8, npy_b=16, dxy=781.25,  dt=dt_800, configs=[(16,1)]),
+        )
+
+    rotated = False
+    for setting in settings:
+        base_name = setting['name']
+        for n in range(5):
+            setting['name'] = base_name + '_' + str(n)
+            run_scaling(setting, rotated, lfs_c=16, lfs_s='2M')
+
+
 if __name__ == '__main__':
 
     #run_io_benchmark()
 
-    run_200m_scaling()
-    run_400m_scaling()
-    run_800m_scaling()
+    #run_200m_scaling()
+    #run_400m_scaling()
+    #run_800m_scaling()
 
     #run_strong_scaling()
+
+    run_chosen_configs()

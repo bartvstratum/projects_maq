@@ -116,6 +116,8 @@ def rcemip_ii_input(
         lfs_c=None,
         lfs_s=None,
         dt_max=None,
+        ratio_x=1,
+        ratio_y=1,
         float_type=np.float32):
     """
     Create input files for Mock Walker case.
@@ -164,6 +166,12 @@ def rcemip_ii_input(
     # Limit time stepping in scaling tests.
     if dt_max is not None:
         ini['time']['dtmax'] = dt_max
+
+    ini['cross']['ratio_x'] = ratio_x
+    ini['cross']['ratio_y'] = ratio_y
+
+    ini['dump']['ratio_x'] = ratio_x
+    ini['dump']['ratio_y'] = ratio_y
 
     # Check and write to final .ini file
     check_ini(ini)
@@ -324,7 +332,8 @@ def rcemip_ii_input(
             f.write(f'srun ./microhh run rcemip_ii\n\n')
 
             if copy_out_to is not None:
-                f.write(f'cp rcemip_ii.out {copy_out_to}/{name}.out')
+                f.write(f'cp rcemip_ii.out {copy_out_to}/{name}.out\n')
+                f.write(f'cp mhh*.out {copy_out_to}/{name}.stdout\n')
 
         return slurm_script
 

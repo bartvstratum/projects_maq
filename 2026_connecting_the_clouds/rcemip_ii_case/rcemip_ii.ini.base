@@ -39,8 +39,11 @@ beta=2.0
 swcross=true
 xy=0,31750
 xz=0
-sampletime=900
+sampletime=60
 crosslist=sw_flux_up,sw_flux_dn,lw_flux_up,lw_flux_dn,sw_flux_up_clear,sw_flux_dn_clear,lw_flux_up_clear,lw_flux_dn_clear,qt_fluxbot,thl_fluxbot,qt_path,ql_path,qi_path,qr_path,qs_path,qg_path,qlqi_path,qsat_path,u,v,w,thl,qt,w500hpa,rr_bot,z0h,z0m
+crosslist_coarse=qt_path,ql_path,qi_path,qr_path,qs_path,qg_path,qlqi_path,qsat_path
+ratio_x=None
+ratio_y=None
 
 [diff]
 swdiff=smag2
@@ -51,8 +54,8 @@ swdump=true
 sampletime=60
 dumplist=u,v,w,thl,qt,ql,qi,qr,qs,qg
 dumplist_coarse=u,v,w,thl,qt,ql,qi,qr,qs,qg
-ratio_x=4
-ratio_y=4
+ratio_x=None
+ratio_y=None
 
 [fields]
 visc=1e-05
@@ -87,7 +90,8 @@ cflmax=1.2
 Nc0=100000000
 
 [radiation]
-swradiation=rrtmgp
+#swradiation=rrtmgp
+swradiation=0
 swlongwave=true
 swshortwave=true
 dt_rad=900
