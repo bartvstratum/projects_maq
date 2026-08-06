@@ -1,7 +1,7 @@
 [advec]
 swadvec=2i5
 cflmax=1.2
-fluxlimit_list=qt,qr,qs,qg
+#fluxlimit_list=qt,qr,qs,qg
 
 [boundary]
 swboundary=surface
@@ -79,7 +79,7 @@ swspatialorder=2
 
 [limiter]
 limitlist=qt,qs,qg,qr
-#cliplist=qt,qs,qg,qr
+cliplist=qt,qs,qg,qr
 
 [master]
 npx=1
@@ -91,8 +91,7 @@ cflmax=1.2
 Nc0=100000000
 
 [radiation]
-#swradiation=rrtmgp
-swradiation=0
+swradiation=rrtmgp
 swlongwave=true
 swshortwave=true
 dt_rad=900

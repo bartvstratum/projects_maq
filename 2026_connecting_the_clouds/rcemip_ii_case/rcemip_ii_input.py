@@ -33,7 +33,7 @@ import global_settings as settings
 Case settings.
 """
 float_type = np.float32
-sw_cos_sst = True
+sw_cos_sst = False
 rotated_domain = False
 mean_sst = 300
 d_sst = 2.5
@@ -43,14 +43,14 @@ ps = 101480
 """
 Horizontal grid.
 """
-xsize = 64*200
-ysize = 64*200
+xsize = 240*200
+ysize = 240*200
 
-itot = 64
-jtot = 64
+itot = 240
+jtot = 240
 
-npx = 2
-npy = 2
+npx = 1
+npy = 1
 
 """
 # Full domain, 800 m resolution.
@@ -89,7 +89,7 @@ npy = 32
 """
 
 #endtime = 10*24*3600
-endtime = 1*3600
+endtime = 2*24*3600
 
 """
 # Official RCEMIP LES grid
