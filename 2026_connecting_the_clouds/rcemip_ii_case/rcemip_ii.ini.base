@@ -79,6 +79,7 @@ swspatialorder=2
 
 [limiter]
 limitlist=qt,qs,qg,qr
+#cliplist=qt,qs,qg,qr
 
 [master]
 npx=1
