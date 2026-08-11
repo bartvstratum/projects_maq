@@ -1,5 +1,13 @@
 ## Required output production runs
 
+### Summary:
+
+- Restart files: archive every 25d
+- Cross xy native: hourly, last 5d
+- Cross xy coarse: hourly, full sim
+- Cross xz native: hourly, full sim (spanwise mean)
+- Reduced 3D: hourly, last 25d
+
 ### Restart files
 
 - Archived every 25 simulated days.

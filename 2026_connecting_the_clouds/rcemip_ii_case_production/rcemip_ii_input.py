@@ -87,18 +87,25 @@ exp_dev = dict(
     delta_sst = 2.5,
     sw_cos_sst = True,
     ps = 101480,
-    xsize = 256*200,
-    ysize = 32*200,
+    xsize = 256*400,
+    ysize = 32*400,
     itot = 256,
     jtot = 32,
     npx = 1,
     npy = 1,
-    coarse_ratio_x = 16,
-    coarse_ratio_y = 16,
-    end_time = 10*24*3600,
+    coarse_ratio_x = 4,
+    coarse_ratio_y = 4,
+    end_time = 2*24*3600,
     )
 
-exp_800m_d2_5 = dict(
+# 1. MW295dT2p5 – A baseline climate, with an average sea-surface temperature of 295K and a
+# first-wavenumber sea-surface temperature perturbation of 2.5K amplitude
+# 2. MW300dT2p5 – A uniform sea-surface temperature warming experiment, with an average sea-
+# surface temperature of 300K, but an equally strong 2.5K temperature perturbation
+# 3. MW300dT1p25 – A “patterned” warming experiment, where both the mean sea-
+# temperature is raised, and the temperature perturbation is reduced to 1.25K.
+
+exp_800m_base = dict(
     name = 'rce_800_d2.5',
     mean_sst = 300,
     delta_sst = 2.5,
