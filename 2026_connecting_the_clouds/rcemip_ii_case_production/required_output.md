@@ -30,19 +30,25 @@
 - [x] clwvi Condensed water path (cloud ice + cloud liquid) kg m−2 --> qlqi_path
 - [x] clivi Ice water path (cloud ice) kg m−2 --> qi_path
 - [ ] psl Sea level pressure Pa --> **NOTE** = constant in LES (1D phydro) or 3D phydro?
-- [ ] tas 2 m air temperature K --> **NOTE** Needs to be implemented in MO.
-- [ ] tabot Air temperature at lowest model level K --> thl, needs post for conversion
-- [ ] uas 10 m eastward wind m s−1 --> **NOTE** Needs to be implemented in MO.
-- [ ] vas 10 m northward wind m s−1 --> **NOTE** Needs to be implemented in MO.
+- [x] tas 2 m air temperature K --> t2m
+- [x] tabot Air temperature at lowest model level K --> thl, needs post for conversion
+- [x] uas 10 m eastward wind m s−1 --> u10m
+- [x] vas 10 m northward wind m s−1 --> v10m
 - [x] uabot Eastward wind at lowest model level m s−1 --> u
 - [x] vabot Northward wind at lowest model level m s−1 --> v
 - [x] wa500 or wap500 Vertical velocity or omega at 500 hPa m s−1 or Pa s−1 --> w500hpa
-- [ ] cl! Total cloud fraction of grid column --> **NOTE** 1/0 in LES.
-- [x] pr_conv! Surface convective precipitation rate kg m−2 s−1 **NOTE** == rrsg_bot
-- [ ] albisccp! ISCCP mean cloud albedo **NOTE** Needs to be implemented.
-- [ ] cltisccp! ISCCP total cloud cover % **NOTE** Needs to be implemented.
-- [ ] pctisccp! ISCCP mean cloud-top pressure Pa **NOTE** Needs to be implemented.
+- [ ] cl! Total cloud fraction of grid column --> **NOTE** 1/0 in LES, can be calculated as qlqi_path mask
+- [ ] pr_conv! Surface convective precipitation rate kg m−2 s−1 **NOTE** == does not exist in LES.
+- [ ] albisccp! ISCCP mean cloud albedo **NOTE** Needs to be implemented?
+- [ ] cltisccp! ISCCP total cloud cover % **NOTE** Needs to be implemented?
+- [ ] pctisccp! ISCCP mean cloud-top pressure Pa **NOTE** Needs to be implemented?
 
 ```
-crosslist = rrsg_bot,thl_fluxbot,qt_fluxbot,lw_flux_dn,lw_flux_up,sw_flux_dn,sw_flux_up,sw_flux_dn_clear,sw_flux_up_clear,lw_flux_dn_clear,lw_flux_up_clear,qv_path,qsat_path,qlqi_path,qi_path,thl,u,v,w500hpa
+crosslist = rrsg_bot,thl_fluxbot,qt_fluxbot,lw_flux_dn,lw_flux_up,sw_flux_dn,sw_flux_up,sw_flux_dn_clear,sw_flux_up_clear,lw_flux_dn_clear,lw_flux_up_clear,qv_path,qsat_path,qlqi_path,qi_path,t2m,u10m,v10m,thl,u,v,w500hpa
 ```
+
+**NOTES**:
+- qr_path not in output?
+- Diagnostic MO includes t2m, u10m, v10m, but not q2m?
+- For XZ, output only thl + u + v.
+- Do we want spanwise averaged cross-sections of e.g. thl, qt, ql, qi, qr, qs, qg, u, w, ...?
