@@ -167,6 +167,8 @@ def rcemip_ii_input(
     if dt_max is not None:
         ini['time']['dtmax'] = dt_max
 
+    ini['cross']['xy'] = [0, zsize]
+
     ini['cross']['ratio_x'] = ratio_x
     ini['cross']['ratio_y'] = ratio_y
 

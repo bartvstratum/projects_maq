@@ -25,7 +25,7 @@
 - [x] rlut TOA outgoing longwave ﬂux W m−2 -> TOD lw_flux_up, needs post to add TOD to TOA
 - [x] rsutcs TOA outgoing shortwave ﬂux – clear sky W m−2 -> sw_flux_up_clear, needs post to add TOD to TOA
 - [x] rlutcs TOA outgoing longwave ﬂux – clear sky W m−2 -> lw_flux_up_clear, needs post to add TOD to TOA
-- [x] prw Water vapor path kg m−2 --> qv_path
+- [x] prw Water vapor path kg m−2 --> **NOTE** replaced by qt_path -> qt_path - qlqi_path = qv_path.
 - [x] sprw Saturated water vapor path kg m−2 --> qsat_path
 - [x] clwvi Condensed water path (cloud ice + cloud liquid) kg m−2 --> qlqi_path
 - [x] clivi Ice water path (cloud ice) kg m−2 --> qi_path
@@ -44,7 +44,7 @@
 - [ ] pctisccp! ISCCP mean cloud-top pressure Pa **NOTE** Needs to be implemented?
 
 ```
-crosslist = rrsg_bot,thl_fluxbot,qt_fluxbot,lw_flux_dn,lw_flux_up,sw_flux_dn,sw_flux_up,sw_flux_dn_clear,sw_flux_up_clear,lw_flux_dn_clear,lw_flux_up_clear,qv_path,qsat_path,qlqi_path,qi_path,t2m,u10m,v10m,thl,u,v,w500hpa
+crosslist = rrsg_bot,thl_fluxbot,qt_fluxbot,lw_flux_dn,lw_flux_up,sw_flux_dn,sw_flux_up,sw_flux_dn_clear,sw_flux_up_clear,lw_flux_dn_clear,lw_flux_up_clear,qt_path,qsat_path,qlqi_path,qi_path,t2m,u10m,v10m,thl,u,v,w500hpa
 ```
 
 **NOTES**:

@@ -58,14 +58,14 @@ env_eddy = dict(
     gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
     microhh_path = '/home/bart/meteo/models/microhh/',
     microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
-    work_dir = 'test',
+    work_dir = '.',
 )
 
 """
 Experiment specific settings.
 """
 exp_rcemip_1 = dict(
-    name = 'rcemip_i'
+    name = 'rcemip-i',
     mean_sst = 300,
     delta_sst = 2.5,
     sw_cos_sst = False,
@@ -77,12 +77,29 @@ exp_rcemip_1 = dict(
     npx = 1,
     npy = 1,
     coarse_ratio_x = 16,
-    coarse_ratio_y = 16
-    end_time = 2*24*3600,
+    coarse_ratio_y = 16,
+    end_time = 10*24*3600,
+    )
+
+exp_dev = dict(
+    name = 'rcemip-dev',
+    mean_sst = 300,
+    delta_sst = 2.5,
+    sw_cos_sst = True,
+    ps = 101480,
+    xsize = 256*200,
+    ysize = 32*200,
+    itot = 256,
+    jtot = 32,
+    npx = 1,
+    npy = 1,
+    coarse_ratio_x = 16,
+    coarse_ratio_y = 16,
+    end_time = 10*24*3600,
     )
 
 exp_800m_d2_5 = dict(
-    name = 'rce_800_d2.5'
+    name = 'rce_800_d2.5',
     mean_sst = 300,
     delta_sst = 2.5,
     sw_cos_sst = True,
@@ -94,7 +111,7 @@ exp_800m_d2_5 = dict(
     npx = 64,
     npy = 16,
     coarse_ratio_x = 4,
-    coarse_ratio_y = 4
+    coarse_ratio_y = 4,
     end_time = 150*24*3600,
     )
 
@@ -103,10 +120,10 @@ exp_800m_d2_5 = dict(
 Generate case input.
 Only needed once per experiment -- SLURM script does the restarts/archiving/...
 """
-exp = exp_rcemip_1
+exp = exp_dev
 env = env_eddy
 
-work_dir = os.path.join(env['work_dir'], exp['name']),
+work_dir = os.path.join(env['work_dir'], exp['name'])
 
 if not os.path.exists(work_dir):
     os.makedirs(work_dir)
@@ -126,7 +143,7 @@ rcemip_ii_input(
         mean_sst = exp['mean_sst'],
         d_sst = exp['delta_sst'],
         ps = exp['ps'],
-        sw_rotated_domain = False,
+        rotated_domain = False,
         coef_sw = coef_sw,
         coef_lw = coef_lw,
         wc_time = None,
@@ -138,7 +155,7 @@ rcemip_ii_input(
         account = env['project'],
         partition = env['partition'],
         copy_out_to = None,
-        lfc_c = env['lfs_c'],
+        lfs_c = env['lfs_c'],
         lfs_s = env['lfs_s'],
         dt_max = None,
         ratio_x = exp['coarse_ratio_x'],
