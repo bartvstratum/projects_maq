@@ -20,13 +20,17 @@ stop[qt]=0.0
 
 z0m=-1
 z0h=-1
-swconstantz0=False
+swconstantz0=false
 swcharnock=true
 alpha_m=0.11
 alpha_ch=0.018
 # NOTE: we have a single `z0h` and not `z0h` and `z0q` at the moment.
 #       from IFS: alpha_h=0.4, alpha_q=0.62.
 alpha_h=0.50
+
+[budget3d]
+swbudget3d=true
+tendencylist=thl,qt,w
 
 [buffer]
 swbuffer=true
@@ -40,10 +44,14 @@ swcross=true
 xy=None
 xz=0
 sampletime=3600
-#crosslist=thl,qt,ql,qi,qr,qs,qg,u,w
+
+# For full resolution XY, only last five days, hourly:
 crosslist=rrsg_bot,thl_fluxbot,qt_fluxbot,lw_flux_dn,lw_flux_up,sw_flux_dn,sw_flux_up,sw_flux_dn_clear,sw_flux_up_clear,lw_flux_dn_clear,lw_flux_up_clear,qt_path,qsat_path,qlqi_path,qi_path,t2m,u10m,v10m,thl,u,v,w500hpa
+# For coarse resolution XY, full sim, hourly:
 crosslist_coarse=rrsg_bot,thl_fluxbot,qt_fluxbot,lw_flux_dn,lw_flux_up,sw_flux_dn,sw_flux_up,sw_flux_dn_clear,sw_flux_up_clear,lw_flux_dn_clear,lw_flux_up_clear,qt_path,qsat_path,qlqi_path,qi_path,t2m,u10m,v10m,thl,u,v,w500hpa
+# For full resolution XZ-mean, full sim, hourly:
 crosslist_ymean=thl,qt,ql,qi,qr,qs,qg,u,w
+
 ratio_x=None
 ratio_y=None
 
@@ -54,7 +62,8 @@ dnmax=0.25
 [dump]
 swdump=true
 sampletime=3600
-dumplist_coarse=u,v,w,thl,qt,ql,qi,qr,qs,qg
+dumplist=u,v,w,thl,qt,ql,qi,qr,qs,qg,thl_tend,qt_tend,w_tend
+dumplist_coarse=u,v,w,thl,qt,ql,qi,qr,qs,qg,thl_tend,qt_tend,w_tend
 ratio_x=None
 ratio_y=None
 
@@ -105,7 +114,7 @@ swclearskystats=true
 
 [stats]
 swstats=true
-swtendency=False
+swtendency=false
 sampletime=900
 
 [thermo]

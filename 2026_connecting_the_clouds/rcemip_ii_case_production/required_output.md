@@ -58,5 +58,25 @@ crosslist = rrsg_bot,thl_fluxbot,qt_fluxbot,lw_flux_dn,lw_flux_up,sw_flux_dn,sw_
 **NOTES**:
 - qr_path not in output?
 - Diagnostic MO includes t2m, u10m, v10m, but not q2m?
-- For XZ, output only thl + u + v.
-- Do we want spanwise averaged cross-sections of e.g. thl, qt, ql, qi, qr, qs, qg, u, w, ...?
+- For XZ, output only contains thl + u + v (followint Table A3). It think we want thl, qt, ql, qi, qr, qs, qg, u, w, ...?
+
+
+### Coarse-grained 3D
+
+> Output die ik zou coarse-grainen:
+> Op een time, x_coarse_f, y_coarse_f, zf/zh grid:
+
+- [x] ql, qr, qt, qi, theta_l, u, v, w
+- [ ] qr_sedimentation , net_freezing_rate
+- [ ] longwave_heating_rate , shortwave_heating_rate
+- [x] Accumulated tendencies of qt, theta_l, w
+- [ ] Resolved plus subgrid contributions to wthl , wqt , wql , wqi , wqi
+- [ ] Cloud fraction
+
+> Op een time, x_coarse_f, y_coarse_h, zf grid (alleen over de h-rand gemiddeld):
+- [ ] vqt ,vthl ,vw
+- [x]v , thl , qt
+
+> Op een time, x_coarse_h, y_coarse_f, zf grid (alleen over de h-rand gemiddeld):
+- [ ] uqt ,uthl ,uw
+- [x] u , thl , qt
