@@ -68,14 +68,14 @@ crosslist = rrsg_bot,thl_fluxbot,qt_fluxbot,lw_flux_dn,lw_flux_up,sw_flux_dn,sw_
 
 - [x] ql, qr, qt, qi, theta_l, u, v, w
 - [ ] qr_sedimentation , net_freezing_rate
-- [ ] longwave_heating_rate , shortwave_heating_rate
+- [x] longwave_heating_rate , shortwave_heating_rate
 - [x] Accumulated tendencies of qt, theta_l, w
 - [ ] Resolved plus subgrid contributions to wthl , wqt , wql , wqi , wqi
 - [ ] Cloud fraction
 
 > Op een time, x_coarse_f, y_coarse_h, zf grid (alleen over de h-rand gemiddeld):
 - [ ] vqt ,vthl ,vw
-- [x]v , thl , qt
+- [x] v , thl , qt
 
 > Op een time, x_coarse_h, y_coarse_f, zf grid (alleen over de h-rand gemiddeld):
 - [ ] uqt ,uthl ,uw

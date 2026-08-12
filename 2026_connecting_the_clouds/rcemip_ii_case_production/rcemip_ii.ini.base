@@ -62,8 +62,8 @@ dnmax=0.25
 [dump]
 swdump=true
 sampletime=3600
-dumplist=u,v,w,thl,qt,ql,qi,qr,qs,qg,thl_tend,qt_tend,w_tend
-dumplist_coarse=u,v,w,thl,qt,ql,qi,qr,qs,qg,thl_tend,qt_tend,w_tend
+dumplist=u,v,w,thl,qt,ql,qi,qr,qs,qg,thl_tend,qt_tend,w_tend,thl_tend_lw,thl_tend_sw
+dumplist_coarse=u,v,w,thl,qt,ql,qi,qr,qs,qg,thl_tend,qt_tend,w_tend,thl_tend_lw,thl_tend_sw
 ratio_x=None
 ratio_y=None
 
