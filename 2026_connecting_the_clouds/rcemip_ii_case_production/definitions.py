@@ -10,9 +10,11 @@ compute_env = dict(
         gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
         microhh_path = '/home/bart/meteo/models/microhh/',
         microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
-        work_dir = '.'
+        work_dir = 'experiments/'
         ),
     )
+
+env = compute_env['eddy']
 
 
 """
@@ -37,7 +39,8 @@ experiments = dict(
         coarse_ratio_x = 16,
         coarse_ratio_y = 16,
         end_time = 20*24*3600,
-        time_chunk = 10*24*3600
+        time_chunk = 10*24*3600,
+        wc_time = '48:00:00',
         ),
 
     # Small test domain:
@@ -58,6 +61,7 @@ experiments = dict(
         coarse_ratio_y = 4,
         end_time = 3*24*3600,
         time_chunk = 24*3600,
+        wc_time = '48:00:00',
         ),
 
     mini = dict(
@@ -77,5 +81,6 @@ experiments = dict(
         coarse_ratio_y = 4,
         end_time = 3*24*3600,
         time_chunk = 24*3600,
+        wc_time = '48:00:00',
         ),
     )

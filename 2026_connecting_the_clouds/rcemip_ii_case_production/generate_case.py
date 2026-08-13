@@ -26,15 +26,14 @@ import numpy as np
 
 import ls2d
 
-from rcemip_ii import rcemip_ii_input
-from definitions import experiments, compute_env
+from case_setup import rcemip_ii_input
+from definitions import experiments, env
 
 """
 Parse command line arguments.
 """
 parser = argparse.ArgumentParser()
-parser.add_argument('--experiment', required=True, help='Experiment name')
-parser.add_argument('--system', required=True, help='HPC name')
+parser.add_argument('--exp', required=True, help='Experiment name')
 args = parser.parse_args()
 
 
@@ -59,8 +58,7 @@ grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
 """
 Generate case input.
 """
-exp = experiments[args.experiment]
-env = compute_env[args.system]
+exp = experiments[args.exp]
 
 work_dir = os.path.join(env['work_dir'], exp['name'])
 

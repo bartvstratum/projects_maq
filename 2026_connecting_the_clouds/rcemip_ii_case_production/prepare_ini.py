@@ -1,24 +1,29 @@
+import os
 import glob
 import argparse
 
 from microhhpy.io import read_ini, save_ini
+from definitions import experiments, env
 
 """
 Parse cmd line arguments.
 """
 parser = argparse.ArgumentParser()
-parser.add_argument('--work_dir', required=True, help='Working directory')
+parser.add_argument('--exp', required=True, help='Experiment name')
 parser.add_argument('--start_time', type=int, required=True)
 parser.add_argument('--end_time', type=int, required=True)
-parser.add_argument('--total_time', type=int, required=True)
 args = parser.parse_args()
+
+exp = experiments[args.exp]
+work_dir = os.path.join(env['work_dir'], exp['name'])
+total_time = exp['end_time']
 
 
 """
 Settings. What output is saved when?
 """
-output_coarse_xy = args.total_time
-output_native_xz = args.total_time
+output_coarse_xy = total_time
+output_native_xz = total_time
 output_native_xy = 1*24*3600
 output_coarse_3d = 2*24*3600
 
@@ -42,14 +47,14 @@ dumplist_coarse = [
 """
 Read base .ini file and set values.
 """
-ini = read_ini(f'{args.wd}/rcemip_ii.ini.base')
+ini = read_ini(f'{work_dir}/rcemip_ii.ini.base')
 
 ini['time']['starttime'] = args.start_time
 ini['time']['endtime'] = args.end_time
 ini['time']['savetime'] = args.end_time-args.start_time
 
 # Determine wheter to trigger cross/dump output:
-time_left = args.total_time - args.start_time
+time_left = total_time - args.start_time
 
 save_coarse_xy = time_left <= output_coarse_xy
 save_native_xy = time_left <= output_native_xy
@@ -79,4 +84,4 @@ if save_coarse_3d:
 """
 Write final .ini file.
 """
-save_ini(ini, f'{args.wd}/rcemip_ii.ini')
+save_ini(ini, f'{work_dir}/rcemip_ii.ini')
