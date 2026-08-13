@@ -176,8 +176,10 @@ def rcemip_ii_input(
     ini['dump']['ratio_y'] = ratio_y
 
     # Check and write to final .ini file
+    # This is again written with .base appended.
+    # Each simulations segment has its unique settings depending on whether output is needed.
     check_ini(ini)
-    save_ini(ini, f'{work_dir}/rcemip_ii.ini')
+    save_ini(ini, f'{work_dir}/rcemip_ii.ini.base')
 
 
     """
