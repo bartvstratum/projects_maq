@@ -12,9 +12,20 @@ compute_env = dict(
         microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
         work_dir = 'experiments/'
         ),
+
+    ecmwf = dict(
+        project = None,
+        partition = 'par',
+        lfs_c = None,
+        lfs_s = None,
+        gpt_path = '/home/nkbs/meteo/models/coefficients_veerman',
+        microhh_path = '/home/nkbs/meteo/models/microhh',
+        microhh_bin = '/home/nkbs/meteo/models/microhh/build_sp_dpfft_cpumpi/microhh',
+        work_dir = '/scratch/nkbs/',
+        ),
     )
 
-env = compute_env['eddy']
+env = compute_env['ecmwf']
 
 
 """
@@ -45,23 +56,23 @@ experiments = dict(
 
     # Small test domain:
     dev = dict(
-        name = 'dev_domain',
+        name = 'dev',
         short_name = 'dev',
         mean_sst = 300,
-        delta_sst = 2.5,
+        delta_sst = 1.25,
         sw_cos_sst = True,
         ps = 101480,
         xsize = 256*400,
-        ysize = 32*400,
+        ysize = 64*400,
         itot = 256,
         jtot = 32,
-        npx = 1,
-        npy = 1,
+        npx = 16,
+        npy = 16,
         coarse_ratio_x = 4,
         coarse_ratio_y = 4,
         end_time = 3*24*3600,
         time_chunk = 24*3600,
-        wc_time = '48:00:00',
+        wc_time = '12:00:00',
         ),
 
     mini = dict(
