@@ -1,5 +1,6 @@
 import os
 import argparse
+import subprocess
 
 import numpy as np
 
@@ -44,6 +45,8 @@ Spawn simulations chunks, daisy-chained through their SLURM IDs.
 n_chunks = int(np.ceil(total_time / time_chunk))
 
 print(f'Dividing {total_time} into {n_chunks} runs of {time_chunk}...')
+
+previous_job_id = None
 
 for i in range(n_chunks):
     start_time = i * time_chunk
@@ -93,3 +96,16 @@ for i in range(n_chunks):
         f.write(f'srun ./microhh run rcemip_ii\n\n')
 
         # TODO: post-processing + archiving.
+
+    """
+    Submit SLURM script, daisy-chained onto the previous chunk with `afterok`.
+    """
+    sbatch_cmd = ['sbatch', '--parsable']
+    if previous_job_id is not None:
+        sbatch_cmd.append(f'--dependency=afterok:{previous_job_id}')
+    sbatch_cmd.append(slurm_script)
+
+    result = subprocess.run(sbatch_cmd, capture_output=True, text=True, check=True)
+    previous_job_id = result.stdout.strip()
+
+    print(f'Submitted chunk {i} ({name}) as job {previous_job_id}')
