@@ -119,11 +119,11 @@ pbot=None
 swupdatebasestate=true
 
 [time]
-starttime=0
+starttime=None
 endtime=None
 dt=6.0
 dtmax=60
-savetime=21600
+savetime=None
 outputiter=1
 adaptivestep=true
 rkorder=3

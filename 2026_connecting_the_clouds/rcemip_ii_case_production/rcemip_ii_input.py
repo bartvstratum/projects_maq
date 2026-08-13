@@ -21,13 +21,21 @@
 #
 
 import os
+import argparse
 import numpy as np
 
 import ls2d
 
 from rcemip_ii import rcemip_ii_input
+from definitions import experiments, compute_env
 
-
+"""
+Parse command line arguments.
+"""
+parser = argparse.ArgumentParser()
+parser.add_argument('--experiment', required=True, help='Experiment name')
+parser.add_argument('--system', required=True, help='HPC name')
+args = parser.parse_args()
 
 
 """
@@ -47,88 +55,12 @@ z = np.array([0, 3_000, 15_000, 100_000])
 f = np.array([1.05, 1.00, 1.055])
 grid = ls2d.grid.Grid_stretched_manual(128, 40, z, f)
 
-"""
-Compute environments.
-"""
-env_eddy = dict(
-    project = None,
-    partition = None,
-    lfs_c = None,
-    lfs_s = None,
-    gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
-    microhh_path = '/home/bart/meteo/models/microhh/',
-    microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
-    work_dir = '.',
-)
-
-"""
-Experiment specific settings.
-"""
-exp_rcemip_1 = dict(
-    name = 'rcemip-i',
-    mean_sst = 300,
-    delta_sst = 2.5,
-    sw_cos_sst = False,
-    ps = 101480,
-    xsize = 240*200,
-    ysize = 240*200,
-    itot = 240,
-    jtot = 240,
-    npx = 1,
-    npy = 1,
-    coarse_ratio_x = 16,
-    coarse_ratio_y = 16,
-    end_time = 10*24*3600,
-    )
-
-exp_dev = dict(
-    name = 'rcemip-dev',
-    mean_sst = 300,
-    delta_sst = 2.5,
-    sw_cos_sst = True,
-    ps = 101480,
-    xsize = 256*400,
-    ysize = 32*400,
-    itot = 256,
-    jtot = 32,
-    npx = 1,
-    npy = 1,
-    coarse_ratio_x = 4,
-    coarse_ratio_y = 4,
-    end_time = 2*24*3600,
-    )
-
-# 1. MW295dT2p5 – A baseline climate, with an average sea-surface temperature of 295K and a
-# first-wavenumber sea-surface temperature perturbation of 2.5K amplitude
-# 2. MW300dT2p5 – A uniform sea-surface temperature warming experiment, with an average sea-
-# surface temperature of 300K, but an equally strong 2.5K temperature perturbation
-# 3. MW300dT1p25 – A “patterned” warming experiment, where both the mean sea-
-# temperature is raised, and the temperature perturbation is reduced to 1.25K.
-
-exp_800m_base = dict(
-    name = 'rce_800_d2.5',
-    mean_sst = 300,
-    delta_sst = 2.5,
-    sw_cos_sst = True,
-    ps = 101480,
-    xsize = 7680*781.25,
-    ysize = 512*781.25,
-    itot = 7680,
-    jtot = 512,
-    npx = 64,
-    npy = 16,
-    coarse_ratio_x = 4,
-    coarse_ratio_y = 4,
-    end_time = 150*24*3600,
-    )
-
 
 """
 Generate case input.
-Only needed once per experiment -- SLURM script does the restarts/archiving/...
 """
-exp = exp_dev
-env = env_eddy
+exp = experiments[args.experiment]
+env = compute_env[args.system]
 
 work_dir = os.path.join(env['work_dir'], exp['name'])
 
@@ -141,30 +73,22 @@ rcemip_ii_input(
         ysize = exp['ysize'],
         itot = exp['itot'],
         jtot = exp['jtot'],
+        c_ratio_x = exp['coarse_ratio_x'],
+        c_ratio_y = exp['coarse_ratio_y'],
         npx = exp['npx'],
         npy = exp['npy'],
         z = grid.z,
         zsize = grid.zsize,
-        endtime = exp['end_time'],
         sw_cos_sst = exp['sw_cos_sst'],
         mean_sst = exp['mean_sst'],
         d_sst = exp['delta_sst'],
         ps = exp['ps'],
-        rotated_domain = False,
         coef_sw = coef_sw,
         coef_lw = coef_lw,
-        wc_time = None,
         work_dir = work_dir,
         gpt_path = env['gpt_path'],
         microhh_path = env['microhh_path'],
         microhh_bin = env['microhh_bin'],
-        create_slurm_script = False,
-        account = env['project'],
-        partition = env['partition'],
-        copy_out_to = None,
-        lfs_c = env['lfs_c'],
-        lfs_s = env['lfs_s'],
-        dt_max = None,
-        ratio_x = exp['coarse_ratio_x'],
-        ratio_y = exp['coarse_ratio_y'],
         float_type = float_type)
+
+print(f'Created experiment \"{exp["name"]}\" in {work_dir}')

@@ -92,32 +92,22 @@ def rcemip_ii_input(
         ysize,
         itot,
         jtot,
+        c_ratio_x,
+        c_ratio_y,
         npx,
         npy,
         z,
         zsize,
-        endtime,
         sw_cos_sst,
         mean_sst,
         d_sst,
         ps,
-        rotated_domain,
         coef_sw,
         coef_lw,
-        wc_time,
         work_dir,
         gpt_path,
         microhh_path,
         microhh_bin,
-        create_slurm_script=False,
-        account=None,
-        partition=None,
-        copy_out_to=None,
-        lfs_c=None,
-        lfs_s=None,
-        dt_max=None,
-        ratio_x=1,
-        ratio_y=1,
         float_type=np.float32):
     """
     Create input files for Mock Walker case.
@@ -154,7 +144,6 @@ def rcemip_ii_input(
         ini['boundary']['sbot_2d_list'] = ['thl', 'qt']
 
     ini['buffer']['zstart'] = 0.75*zsize
-    ini['time']['endtime'] = endtime
 
     ini['thermo']['pbot'] = ps
 
@@ -163,22 +152,15 @@ def rcemip_ii_input(
     ini['boundary']['sbot[thl]'] = mean_sst / exn
     ini['boundary']['sbot[qt]'] = qsat(ps, mean_sst)
 
-    # Limit time stepping in scaling tests.
-    if dt_max is not None:
-        ini['time']['dtmax'] = dt_max
-
     ini['cross']['xy'] = [0, zsize]
 
-    ini['cross']['ratio_x'] = ratio_x
-    ini['cross']['ratio_y'] = ratio_y
+    ini['cross']['ratio_x'] = c_ratio_x
+    ini['cross']['ratio_y'] = c_ratio_y
 
-    ini['dump']['ratio_x'] = ratio_x
-    ini['dump']['ratio_y'] = ratio_y
+    ini['dump']['ratio_x'] = c_ratio_x
+    ini['dump']['ratio_y'] = c_ratio_y
 
     # Check and write to final .ini file
-    # This is again written with .base appended.
-    # Each simulations segment has its unique settings depending on whether output is needed.
-    check_ini(ini)
     save_ini(ini, f'{work_dir}/rcemip_ii.ini.base')
 
 
@@ -243,35 +225,21 @@ def rcemip_ii_input(
     if (sw_cos_sst):
         """
         2D surface fields with `SST(x) = <SST> - d_SST / 2 * cos(2 pi x / xsize)`.
-        if rotated_domain, the gradient is put in the y-direction.
         """
 
         thl_sbot = np.zeros((jtot, itot), dtype=float_type)
         qt_sbot  = np.zeros((jtot, itot), dtype=float_type)
 
-        if rotated_domain:
-            dy = ysize / jtot
-            y = np.arange(dy/2, ysize, dy)
-            sst_y = mean_sst - d_sst / 2 * np.cos(2 * np.pi * y / ysize)
+        dx = xsize / itot
+        x = np.arange(dx/2, xsize, dx)
+        sst_x = mean_sst - d_sst / 2 * np.cos(2 * np.pi * x / xsize)
 
-            exn = exner(ps)
-            thl_y = sst_y / exn
-            qt_y  = qsat(ps, sst_y)
+        exn = exner(ps)
+        thl_x = sst_x / exn
+        qt_x  = qsat(ps, sst_x)
 
-            thl_sbot[:,:] = thl_y[:, None]
-            qt_sbot[:,:] = qt_y[:, None]
-
-        else:
-            dx = xsize / itot
-            x = np.arange(dx/2, xsize, dx)
-            sst_x = mean_sst - d_sst / 2 * np.cos(2 * np.pi * x / xsize)
-
-            exn = exner(ps)
-            thl_x = sst_x / exn
-            qt_x  = qsat(ps, sst_x)
-
-            thl_sbot[:,:] = thl_x[None, :]
-            qt_sbot[:,:] = qt_x[None, :]
+        thl_sbot[:,:] = thl_x[None, :]
+        qt_sbot[:,:] = qt_x[None, :]
 
 
         thl_sbot.tofile(f'{work_dir}/thl_bot_in.0000000')
@@ -290,56 +258,3 @@ def rcemip_ii_input(
     shutil.copy2(f'{rrtmgp_path}/rrtmgp-clouds-sw.nc', f'{work_dir}/cloud_coefficients_sw.nc')
 
     shutil.copy2(microhh_bin, f'{work_dir}/microhh')
-
-
-    """
-    Create SLURM script.
-    """
-    if create_slurm_script:
-
-        slurm_script = f'{work_dir}/run.slurm'
-        with open(slurm_script, 'w') as f:
-
-            f.write(f'#!/bin/bash\n\n')
-            if account is not None:
-                f.write(f'#SBATCH --account={account}\n')
-            f.write(f'#SBATCH --job-name={name}\n')
-            f.write(f'#SBATCH --output={work_dir}/mhh-%j.out\n')
-            f.write(f'#SBATCH --error={work_dir}/mhh-%j.err\n')
-            f.write(f'#SBATCH --partition={partition}\n')
-            f.write(f'#SBATCH --ntasks={npx*npy}\n')
-
-            if partition == 'gpu_h100' or partition == 'gpu_a100':
-                f.write(f'#SBATCH --cpus-per-task=16\n')
-                f.write(f'#SBATCH --gpus-per-node=1\n')
-            else:
-                f.write(f'#SBATCH --cpus-per-task=1\n')
-
-            f.write(f'#SBATCH --ntasks-per-core=1\n')
-
-            if partition == 'standard':
-                f.write(f'#SBATCH --mem=224G\n')
-
-            f.write(f'#SBATCH --time={wc_time}\n\n')
-
-            f.write(f'source ~/setup_env.sh\n\n')
-
-            f.write(f'cd {work_dir}\n\n')
-
-            if partition == 'standard':
-                f.write('export FI_CXI_RX_MATCH_MODE=hybrid\n\n')
-
-            if lfs_c is not None and lfs_s is not None:
-                f.write(f'lfs setstripe -c {lfs_c} -S {lfs_s} {work_dir}\n\n')
-
-            f.write(f'srun ./microhh init rcemip_ii\n')
-            f.write(f'srun ./microhh run rcemip_ii\n\n')
-
-            if copy_out_to is not None:
-                f.write(f'cp rcemip_ii.out {copy_out_to}/{name}.out\n')
-                f.write(f'cp mhh*.out {copy_out_to}/{name}.stdout\n')
-
-        return slurm_script
-
-    else:
-        return None

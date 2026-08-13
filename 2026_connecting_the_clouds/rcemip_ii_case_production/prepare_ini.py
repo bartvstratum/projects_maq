@@ -7,10 +7,10 @@ from microhhpy.io import read_ini, save_ini
 Parse cmd line arguments.
 """
 parser = argparse.ArgumentParser()
-parser.add_argument('-wd', required=True, help='Working directory')
-parser.add_argument('-start_time', type=int, required=True)
-parser.add_argument('-end_time', type=int, required=True)
-parser.add_argument('-total_time', type=int, required=True)
+parser.add_argument('--work_dir', required=True, help='Working directory')
+parser.add_argument('--start_time', type=int, required=True)
+parser.add_argument('--end_time', type=int, required=True)
+parser.add_argument('--total_time', type=int, required=True)
 args = parser.parse_args()
 
 
