@@ -6,6 +6,8 @@ import numpy as np
 
 from definitions import experiments, env
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 """
 Parse cmd line arguments.
@@ -83,7 +85,7 @@ for i in range(n_chunks):
 
         f.write(f'cd {work_dir}\n\n')
 
-        f.write(f'python prepare_ini.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n\n')
+        f.write(f'python {script_dir}/prepare_ini.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n\n')
 
         if partition == 'standard':
             f.write('export FI_CXI_RX_MATCH_MODE=hybrid\n\n')
