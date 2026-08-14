@@ -38,7 +38,7 @@ crosslist_xy = [
 crosslist_xz = ['thl', 'qt', 'ql', 'qi', 'qr', 'qs', 'qg', 'u', 'w']
 
 dumplist_coarse = [
-        'u', 'v', 'w', 'thl', 'qt', 'ql', 'qi', 'qr', 'qs', 'qg',
+        'u', 'v', 'w', 'thl', 'qt', 'ql', 'qi', 'qr', 'qs', 'qg', 'qlqi_mask',
         'thl_tend', 'qt_tend', 'w_tend', 'thl_tend_lw', 'thl_tend_sw',
         'qrsg_tend_sed', 'qtr_tend_frz',
         'uthl', 'vthl', 'wthl', 'uqt', 'vqt', 'wqt', 'wqr', 'wql', 'wqi', 'uw', 'vw']
