@@ -11,10 +11,10 @@ from zarr.codecs import BloscCodec
 from definitions import experiments, env
 
 
-def bin_path(work_dir, var, locstr, file_time, z=None):
+def bin_path(work_dir, var, kind, locstr, file_time, z=None):
     if z is None:
-        return os.path.join(work_dir, f'{var}.xy_c.{locstr}.{file_time:07d}')
-    return os.path.join(work_dir, f'{var}.xy_c.{locstr}.{z:05d}.{file_time:07d}')
+        return os.path.join(work_dir, f'{var}.{kind}.{locstr}.{file_time:07d}')
+    return os.path.join(work_dir, f'{var}.{kind}.{locstr}.{z:05d}.{file_time:07d}')
 
 
 def read_file(path, jtot_c, itot_c):
@@ -22,6 +22,7 @@ def read_file(path, jtot_c, itot_c):
 
 
 def read_grid(work_dir, itot, jtot, ktot):
+
     data = np.fromfile(os.path.join(work_dir, 'grid.0000000'), dtype=float_type)
     sizes = (itot, itot, jtot, jtot, ktot, ktot)
     names = ('x', 'xh', 'y', 'yh', 'z', 'zh')
@@ -34,6 +35,7 @@ def read_grid(work_dir, itot, jtot, ktot):
 
 
 def convert_target(paths, times, x_coord, y_coord, jtot_c, itot_c, chunks, out_path):
+
     time_chunk, y_chunk, x_chunk = chunks
 
     delayed_reads = [dask.delayed(read_file)(p, jtot_c, itot_c) for p in paths]
@@ -46,6 +48,28 @@ def convert_target(paths, times, x_coord, y_coord, jtot_c, itot_c, chunks, out_p
             coords={'time': times, 'y': y_coord, 'x': x_coord})
 
     ds.to_zarr(out_path, mode='w', consolidated=False, encoding={name: {'compressors': [compressor]}})
+
+
+def convert_cross(
+        work_dir, chunk_dir, kind, vars_xy, grid, file_times, times,
+        itot_t, jtot_t, ratio_x, ratio_y, chunks):
+
+    out_dir = os.path.join(chunk_dir, kind)
+    os.makedirs(out_dir, exist_ok=True)
+
+    for var, (locstr, z_indices) in vars_xy.items():
+        x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
+        y_coord = grid['yh' if locstr[1] == '1' else 'y'][::ratio_y]
+
+        if z_indices is None:
+            paths = [bin_path(work_dir, var, kind, locstr, ft) for ft in file_times]
+            out_path = os.path.join(out_dir, f'{var}.zarr')
+            convert_target(paths, times, x_coord, y_coord, jtot_t, itot_t, chunks, out_path)
+        else:
+            for z in z_indices:
+                paths = [bin_path(work_dir, var, kind, locstr, ft, z) for ft in file_times]
+                out_path = os.path.join(out_dir, f'{var}_{z}.zarr')
+                convert_target(paths, times, x_coord, y_coord, jtot_t, itot_t, chunks, out_path)
 
 
 if __name__ == '__main__':
@@ -88,7 +112,7 @@ if __name__ == '__main__':
     ratio_x = exp['coarse_ratio_x']
     ratio_y = exp['coarse_ratio_y']
 
-    vars_xy_coarse = dict(
+    vars_xy = dict(
         rrsg_bot          = ('000', None),
         thl_fluxbot       = ('000', None),
         qt_fluxbot        = ('000', None),
@@ -116,23 +140,16 @@ if __name__ == '__main__':
     cluster = LocalCluster(n_workers=n_workers, threads_per_worker=threads_per_worker)
     client = Client(cluster)
 
+    chunk_dir = os.path.join(work_dir, f'{args.start_time:07d}')
+
     if args.cross_xy_c:
-        chunk_dir = os.path.join(work_dir, f'{args.start_time:07d}')
-        os.makedirs(chunk_dir, exist_ok=True)
-        chunks = exp['chunks_xy_c']
+        convert_cross(
+            work_dir, chunk_dir, 'xy_c', vars_xy, grid, file_times, times,
+            itot_c, jtot_c, ratio_x, ratio_y, exp['chunks_xy_c'])
 
-        for var, (locstr, z_indices) in vars_xy_coarse.items():
-            x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
-            y_coord = grid['yh' if locstr[1] == '1' else 'y'][::ratio_y]
-
-            if z_indices is None:
-                paths = [bin_path(work_dir, var, locstr, ft) for ft in file_times]
-                out_path = os.path.join(chunk_dir, f'{var}.zarr')
-                convert_target(paths, times, x_coord, y_coord, jtot_c, itot_c, chunks, out_path)
-            else:
-                for z in z_indices:
-                    paths = [bin_path(work_dir, var, locstr, ft, z) for ft in file_times]
-                    out_path = os.path.join(chunk_dir, f'{var}_{z}.zarr')
-                    convert_target(paths, times, x_coord, y_coord, jtot_c, itot_c, chunks, out_path)
+    if args.cross_xy:
+        convert_cross(
+            work_dir, chunk_dir, 'xy', vars_xy, grid, file_times, times,
+            itot, jtot, 1, 1, exp['chunks_xy'])
 
     client.close()

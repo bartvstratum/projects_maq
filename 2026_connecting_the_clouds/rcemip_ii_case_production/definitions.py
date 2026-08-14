@@ -77,6 +77,7 @@ experiments = dict(
         time_chunk = 24*3600,
         wc_time = '12:00:00',
         chunks_xy_c = (1, 8, 64),
+        chunks_xy = (1, 32, 256),
         ),
 
     mini = dict(
