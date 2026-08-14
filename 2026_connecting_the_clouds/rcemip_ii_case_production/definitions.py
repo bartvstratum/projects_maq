@@ -1,5 +1,6 @@
 """
 Compute environments.
+Make sure all paths are ABSOLUTE!
 """
 compute_env = dict(
     eddy = dict(
@@ -10,7 +11,7 @@ compute_env = dict(
         gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
         microhh_path = '/home/bart/meteo/models/microhh/',
         microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
-        work_dir = 'experiments/'
+        work_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/experiments'
         ),
 
     ecmwf = dict(
@@ -25,7 +26,7 @@ compute_env = dict(
         ),
     )
 
-env = compute_env['ecmwf']
+env = compute_env['eddy']
 
 
 """
@@ -66,8 +67,8 @@ experiments = dict(
         ysize = 64*400,
         itot = 256,
         jtot = 32,
-        npx = 32,
-        npy = 4,
+        npx = 1,
+        npy = 1,
         coarse_ratio_x = 4,
         coarse_ratio_y = 4,
         end_time = 3*24*3600,

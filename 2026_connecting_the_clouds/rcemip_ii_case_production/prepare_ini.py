@@ -15,7 +15,7 @@ parser.add_argument('--end_time', type=int, required=True)
 args = parser.parse_args()
 
 exp = experiments[args.exp]
-work_dir = os.path.join(env['work_dir'], exp['name'])
+work_dir = os.path.abspath(os.path.join(env['work_dir'], exp['name']))
 total_time = exp['end_time']
 
 
