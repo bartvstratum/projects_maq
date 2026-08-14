@@ -11,7 +11,8 @@ compute_env = dict(
         gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
         microhh_path = '/home/bart/meteo/models/microhh/',
         microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
-        work_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/experiments'
+        work_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/experiments',
+        archive_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/archive'
         ),
 
     ecmwf = dict(
@@ -23,6 +24,7 @@ compute_env = dict(
         microhh_path = '/home/nkbs/meteo/models/microhh',
         microhh_bin = '/home/nkbs/meteo/models/microhh/build_sp_dpfft_cpumpi/microhh',
         work_dir = '/scratch/nkbs/',
+        archive_dir = '/scratch/nkbs/archive',
         ),
     )
 
@@ -74,6 +76,7 @@ experiments = dict(
         end_time = 3*24*3600,
         time_chunk = 24*3600,
         wc_time = '12:00:00',
+        chunks_xy_c = (1, 8, 64),
         ),
 
     mini = dict(
