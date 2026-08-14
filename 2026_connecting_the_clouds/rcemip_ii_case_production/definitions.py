@@ -73,11 +73,13 @@ experiments = dict(
         npy = 1,
         coarse_ratio_x = 4,
         coarse_ratio_y = 4,
-        end_time = 3*24*3600,
+        end_time = 2*24*3600,
         time_chunk = 24*3600,
         wc_time = '12:00:00',
-        chunks_xy_c = (1, 8, 64),
-        chunks_xy = (1, 32, 256),
+        chunks_xy_c = (10_000, 8, 64),
+        chunks_xy = (10_000, 32, 256),
+        chunks_xz = (10_000, 128, 256),
+        chunks_dump_c = (10_000, 128, 8, 64),
         ),
 
     mini = dict(

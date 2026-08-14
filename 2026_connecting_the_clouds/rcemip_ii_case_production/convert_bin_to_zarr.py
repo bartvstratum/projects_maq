@@ -17,8 +17,16 @@ def bin_path(work_dir, var, kind, locstr, file_time, z=None):
     return os.path.join(work_dir, f'{var}.{kind}.{locstr}.{z:05d}.{file_time:07d}')
 
 
+def dump_c_path(work_dir, var, file_time):
+    return os.path.join(work_dir, f'{var}_c.{file_time:07d}')
+
+
 def read_file(path, jtot_c, itot_c):
     return np.fromfile(path, dtype=float_type).reshape(jtot_c, itot_c)
+
+
+def read_file_3d(path, ktot, jtot_c, itot_c):
+    return np.fromfile(path, dtype=float_type).reshape(ktot, jtot_c, itot_c)
 
 
 def read_grid(work_dir, itot, jtot, ktot):
@@ -34,18 +42,22 @@ def read_grid(work_dir, itot, jtot, ktot):
     return grid
 
 
-def convert_target(paths, times, x_coord, y_coord, jtot_c, itot_c, chunks, out_path):
+def convert_target(paths, times, dim1, coord1, dim2, coord2, n1, n2, chunks, out_path):
 
-    time_chunk, y_chunk, x_chunk = chunks
+    time_chunk, chunk1, chunk2 = chunks
 
-    delayed_reads = [dask.delayed(read_file)(p, jtot_c, itot_c) for p in paths]
-    file_chunks = [da.from_delayed(d, shape=(jtot_c, itot_c), dtype=float_type) for d in delayed_reads]
-    data = da.stack(file_chunks, axis=0).rechunk({0: time_chunk, 1: y_chunk, 2: x_chunk})
+    delayed_reads = [dask.delayed(read_file)(p, n1, n2) for p in paths]
+    file_chunks = [da.from_delayed(d, shape=(n1, n2), dtype=float_type) for d in delayed_reads]
+    data = da.stack(file_chunks, axis=0).rechunk({0: time_chunk, 1: chunk1, 2: chunk2})
 
     name = os.path.splitext(os.path.basename(out_path))[0]
+
+    chunk_bytes = np.prod(data.chunksize) * np.dtype(float_type).itemsize
+    print(f'{os.path.basename(out_path)}: chunks={data.chunksize}, chunk_size={chunk_bytes/1e6:.2f} MB')
+
     ds = xr.Dataset(
-            {name: (('time', 'y', 'x'), data)},
-            coords={'time': times, 'y': y_coord, 'x': x_coord})
+            {name: (('time', dim1, dim2), data)},
+            coords={'time': times, dim1: coord1, dim2: coord2})
 
     ds.to_zarr(out_path, mode='w', consolidated=False, encoding={name: {'compressors': [compressor]}})
 
@@ -64,12 +76,55 @@ def convert_cross(
         if z_indices is None:
             paths = [bin_path(work_dir, var, kind, locstr, ft) for ft in file_times]
             out_path = os.path.join(out_dir, f'{var}.zarr')
-            convert_target(paths, times, x_coord, y_coord, jtot_t, itot_t, chunks, out_path)
+            convert_target(paths, times, 'y', y_coord, 'x', x_coord, jtot_t, itot_t, chunks, out_path)
         else:
             for z in z_indices:
                 paths = [bin_path(work_dir, var, kind, locstr, ft, z) for ft in file_times]
                 out_path = os.path.join(out_dir, f'{var}_{z}.zarr')
-                convert_target(paths, times, x_coord, y_coord, jtot_t, itot_t, chunks, out_path)
+                convert_target(paths, times, 'y', y_coord, 'x', x_coord, jtot_t, itot_t, chunks, out_path)
+
+
+def convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, chunks):
+
+    out_dir = os.path.join(chunk_dir, 'xz')
+    os.makedirs(out_dir, exist_ok=True)
+
+    for var, locstr in vars_xz.items():
+        x_coord = grid['xh' if locstr[0] == '1' else 'x']
+        z_coord = grid['zh' if locstr[2] == '1' else 'z']
+
+        paths = [bin_path(work_dir, f'{var}_ymean', 'xz', locstr, ft) for ft in file_times]
+        out_path = os.path.join(out_dir, f'{var}_ymean.zarr')
+        convert_target(paths, times, 'z', z_coord, 'x', x_coord, ktot, itot, chunks, out_path)
+
+
+def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, itot_c, jtot_c, ktot, ratio_x, ratio_y, chunks):
+
+    out_dir = os.path.join(chunk_dir, '3d_c')
+    os.makedirs(out_dir, exist_ok=True)
+
+    time_chunk, chunk_z, chunk_y, chunk_x = chunks
+
+    for var, locstr in vars_dump_c.items():
+        x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
+        y_coord = grid['yh' if locstr[1] == '1' else 'y'][::ratio_y]
+        z_coord = grid['zh' if locstr[2] == '1' else 'z']
+
+        paths = [dump_c_path(work_dir, var, ft) for ft in file_times]
+        out_path = os.path.join(out_dir, f'{var}.zarr')
+
+        delayed_reads = [dask.delayed(read_file_3d)(p, ktot, jtot_c, itot_c) for p in paths]
+        file_chunks = [da.from_delayed(d, shape=(ktot, jtot_c, itot_c), dtype=float_type) for d in delayed_reads]
+        data = da.stack(file_chunks, axis=0).rechunk({0: time_chunk, 1: chunk_z, 2: chunk_y, 3: chunk_x})
+
+        chunk_bytes = np.prod(data.chunksize) * np.dtype(float_type).itemsize
+        print(f'{os.path.basename(out_path)}: chunks={data.chunksize}, chunk_size={chunk_bytes/1e6:.2f} MB')
+
+        ds = xr.Dataset(
+                {var: (('time', 'z', 'y', 'x'), data)},
+                coords={'time': times, 'z': z_coord, 'y': y_coord, 'x': x_coord})
+
+        ds.to_zarr(out_path, mode='w', consolidated=False, encoding={var: {'compressors': [compressor]}})
 
 
 if __name__ == '__main__':
@@ -137,6 +192,50 @@ if __name__ == '__main__':
         w500hpa           = ('000', None),
     )
 
+    vars_xz = dict(
+        thl = '000',
+        qt  = '000',
+        ql  = '000',
+        qi  = '000',
+        qr  = '000',
+        qs  = '000',
+        qg  = '000',
+        u   = '100',
+        w   = '001',
+    )
+
+    vars_dump_c = dict(
+        u              = '100',
+        v              = '010',
+        w              = '001',
+        thl            = '000',
+        qt             = '000',
+        ql             = '000',
+        qi             = '000',
+        qr             = '000',
+        qs             = '000',
+        qg             = '000',
+        qlqi_mask      = '000',
+        thl_tend       = '000',
+        qt_tend        = '000',
+        w_tend         = '001',
+        thl_tend_lw    = '000',
+        thl_tend_sw    = '000',
+        qrsg_tend_sed  = '000',
+        qtr_tend_frz   = '000',
+        uthl           = '100',
+        vthl           = '010',
+        wthl           = '001',
+        uqt            = '100',
+        vqt            = '010',
+        wqt            = '001',
+        wqr            = '001',
+        wql            = '001',
+        wqi            = '001',
+        uw             = '101',
+        vw             = '011',
+    )
+
     cluster = LocalCluster(n_workers=n_workers, threads_per_worker=threads_per_worker)
     client = Client(cluster)
 
@@ -151,5 +250,13 @@ if __name__ == '__main__':
         convert_cross(
             work_dir, chunk_dir, 'xy', vars_xy, grid, file_times, times,
             itot, jtot, 1, 1, exp['chunks_xy'])
+
+    if args.cross_xz:
+        convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, exp['chunks_xz'])
+
+    if args.dump_c:
+        convert_dump_c(
+            work_dir, chunk_dir, vars_dump_c, grid, file_times, times,
+            itot_c, jtot_c, ktot, ratio_x, ratio_y, exp['chunks_dump_c'])
 
     client.close()

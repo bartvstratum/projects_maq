@@ -24,8 +24,8 @@ Settings. What output is saved when?
 """
 output_coarse_xy = total_time
 output_native_xz = total_time
-output_native_xy = 1*24*3600
-output_coarse_3d = 2*24*3600
+output_native_xy = total_time #1*24*3600
+output_coarse_3d = total_time #2*24*3600
 
 crosslist_xy = [
         'rrsg_bot', 'thl_fluxbot', 'qt_fluxbot',
