@@ -57,7 +57,7 @@ experiments = dict(
         wc_time = '48:00:00',
         ),
 
-    # Small test domain:
+    # Small domain for development testing.
     dev = dict(
         name = 'dev',
         short_name = 'dev',
@@ -82,7 +82,8 @@ experiments = dict(
         chunks_dump_c = (10_000, 128, 8, 64),
         ),
 
-    mini = dict(
+    # Small domain for testing output.
+    test = dict(
         name = '800m_small',
         short_name = 'd8s',
         mean_sst = 300,
@@ -97,8 +98,12 @@ experiments = dict(
         npy = 16,
         coarse_ratio_x = 4,
         coarse_ratio_y = 4,
-        end_time = 3*24*3600,
-        time_chunk = 24*3600,
+        end_time = 4*24*3600,
+        time_chunk = 2*24*3600,
         wc_time = '48:00:00',
+        chunks_xy_c = (10_000, 64, 480),
+        chunks_xy = (25, 256, 1920),
+        chunks_xz = (10_000, 128, 1920),
+        chunks_dump_c = (3, 128, 64, 480),
         ),
     )
