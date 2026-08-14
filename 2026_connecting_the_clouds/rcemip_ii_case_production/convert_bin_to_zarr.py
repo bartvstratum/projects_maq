@@ -1,5 +1,4 @@
 import argparse
-import glob
 import os
 
 import dask
@@ -12,27 +11,29 @@ from zarr.codecs import BloscCodec
 from definitions import experiments, env
 
 
-def bin_path_2d(work_dir, var, file_time):
-    return os.path.join(work_dir, f'{var}.xy_c.000.{file_time:07d}')
-
-
-def bin_path_z(work_dir, var, locstr, z, file_time):
+def bin_path(work_dir, var, locstr, file_time, z=None):
+    if z is None:
+        return os.path.join(work_dir, f'{var}.xy_c.{locstr}.{file_time:07d}')
     return os.path.join(work_dir, f'{var}.xy_c.{locstr}.{z:05d}.{file_time:07d}')
-
-
-def find_locstr(work_dir, var, z, file_time):
-    pattern = os.path.join(work_dir, f'{var}.xy_c.???.{z:05d}.{file_time:07d}')
-    matches = glob.glob(pattern)
-    if not matches:
-        raise FileNotFoundError(pattern)
-    return os.path.basename(matches[0]).split('.')[2]
 
 
 def read_file(path, jtot_c, itot_c):
     return np.fromfile(path, dtype=float_type).reshape(jtot_c, itot_c)
 
 
-def convert_target(paths, times, jtot_c, itot_c, chunks, out_path):
+def read_grid(work_dir, itot, jtot, ktot):
+    data = np.fromfile(os.path.join(work_dir, 'grid.0000000'), dtype=float_type)
+    sizes = (itot, itot, jtot, jtot, ktot, ktot)
+    names = ('x', 'xh', 'y', 'yh', 'z', 'zh')
+    grid = {}
+    i = 0
+    for name, size in zip(names, sizes):
+        grid[name] = data[i:i+size]
+        i += size
+    return grid
+
+
+def convert_target(paths, times, x_coord, y_coord, jtot_c, itot_c, chunks, out_path):
     time_chunk, y_chunk, x_chunk = chunks
 
     delayed_reads = [dask.delayed(read_file)(p, jtot_c, itot_c) for p in paths]
@@ -42,7 +43,7 @@ def convert_target(paths, times, jtot_c, itot_c, chunks, out_path):
     name = os.path.splitext(os.path.basename(out_path))[0]
     ds = xr.Dataset(
             {name: (('time', 'y', 'x'), data)},
-            coords={'time': times})
+            coords={'time': times, 'y': y_coord, 'x': x_coord})
 
     ds.to_zarr(out_path, mode='w', consolidated=False, encoding={name: {'compressors': [compressor]}})
 
@@ -83,29 +84,33 @@ if __name__ == '__main__':
 
     print(f'Post-processing exp={args.exp}: itot={itot}, jtot={jtot} | itot_c={itot_c}, jtot_c={jtot_c}')
 
+    grid = read_grid(work_dir, itot, jtot, ktot)
+    ratio_x = exp['coarse_ratio_x']
+    ratio_y = exp['coarse_ratio_y']
+
     vars_xy_coarse = dict(
-        rrsg_bot          = None,
-        thl_fluxbot       = None,
-        qt_fluxbot        = None,
-        lw_flux_dn        = (0, 128),
-        lw_flux_up        = (0, 128),
-        sw_flux_dn        = (0, 128),
-        sw_flux_up        = (0, 128),
-        sw_flux_dn_clear  = (0, 128),
-        sw_flux_up_clear  = (0, 128),
-        lw_flux_dn_clear  = (0, 128),
-        lw_flux_up_clear  = (0, 128),
-        qt_path           = None,
-        qsat_path         = None,
-        qlqi_path         = None,
-        qi_path           = None,
-        t2m               = None,
-        u10m              = None,
-        v10m              = None,
-        thl               = (0),
-        u                 = (0),
-        v                 = (0),
-        w500hpa           = None,
+        rrsg_bot          = ('000', None),
+        thl_fluxbot       = ('000', None),
+        qt_fluxbot        = ('000', None),
+        lw_flux_dn        = ('001', (0, 128)),
+        lw_flux_up        = ('001', (0, 128)),
+        sw_flux_dn        = ('001', (0, 128)),
+        sw_flux_up        = ('001', (0, 128)),
+        sw_flux_dn_clear  = ('001', (0, 128)),
+        sw_flux_up_clear  = ('001', (0, 128)),
+        lw_flux_dn_clear  = ('001', (0, 128)),
+        lw_flux_up_clear  = ('001', (0, 128)),
+        qt_path           = ('000', None),
+        qsat_path         = ('000', None),
+        qlqi_path         = ('000', None),
+        qi_path           = ('000', None),
+        t2m               = ('000', None),
+        u10m              = ('100', None),
+        v10m              = ('010', None),
+        thl               = ('000', (0,)),
+        u                 = ('100', (0,)),
+        v                 = ('010', (0,)),
+        w500hpa           = ('000', None),
     )
 
     cluster = LocalCluster(n_workers=n_workers, threads_per_worker=threads_per_worker)
@@ -116,18 +121,18 @@ if __name__ == '__main__':
         os.makedirs(chunk_dir, exist_ok=True)
         chunks = exp['chunks_xy_c']
 
-        for var, z_indices in vars_xy_coarse.items():
-            if z_indices is None:
-                paths = [bin_path_2d(work_dir, var, ft) for ft in file_times]
-                out_path = os.path.join(chunk_dir, f'{var}.zarr')
-                convert_target(paths, times, jtot_c, itot_c, chunks, out_path)
-            else:
-                zs = (z_indices,) if isinstance(z_indices, int) else z_indices
-                locstr = find_locstr(work_dir, var, zs[0], file_times[0])
+        for var, (locstr, z_indices) in vars_xy_coarse.items():
+            x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
+            y_coord = grid['yh' if locstr[1] == '1' else 'y'][::ratio_y]
 
-                for z in zs:
-                    paths = [bin_path_z(work_dir, var, locstr, z, ft) for ft in file_times]
+            if z_indices is None:
+                paths = [bin_path(work_dir, var, locstr, ft) for ft in file_times]
+                out_path = os.path.join(chunk_dir, f'{var}.zarr')
+                convert_target(paths, times, x_coord, y_coord, jtot_c, itot_c, chunks, out_path)
+            else:
+                for z in z_indices:
+                    paths = [bin_path(work_dir, var, locstr, ft, z) for ft in file_times]
                     out_path = os.path.join(chunk_dir, f'{var}_{z}.zarr')
-                    convert_target(paths, times, jtot_c, itot_c, chunks, out_path)
+                    convert_target(paths, times, x_coord, y_coord, jtot_c, itot_c, chunks, out_path)
 
     client.close()
