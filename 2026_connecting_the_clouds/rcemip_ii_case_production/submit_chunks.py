@@ -120,6 +120,8 @@ for i in range(n_chunks):
         """
         Create simple bash script for local testing.
         """
+        mhh_cmd = './microhh' if npx*npy == 1 else f'mpiexec -n {npx*npy} ./microhh'
+
         bash_script = f'{work_dir}/chunk_{i}.sh'
         with open(bash_script, 'w') as f:
 
@@ -127,8 +129,8 @@ for i in range(n_chunks):
             f.write(f'cd {work_dir}\n\n')
             f.write(f'python {script_dir}/prepare_ini.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n\n')
             if start_time == 0:
-                f.write(f'./microhh init rcemip_ii\n')
-            f.write(f'./microhh run rcemip_ii\n\n')
+                f.write(f'{mhh_cmd} init rcemip_ii\n')
+            f.write(f'{mhh_cmd} run rcemip_ii\n\n')
 
         os.chmod(bash_script, 0o755)
 
