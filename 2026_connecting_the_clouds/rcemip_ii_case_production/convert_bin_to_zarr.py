@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 
 import dask
 import dask.array as da
@@ -42,6 +43,12 @@ def read_grid(work_dir, itot, jtot, ktot):
     return grid
 
 
+def chunk_info_str(shape, chunks):
+    chunksize = da.zeros(shape, chunks=chunks, dtype=float_type).chunksize
+    chunk_bytes = np.prod(chunksize) * np.dtype(float_type).itemsize
+    return f'chunks={chunksize}, chunk_size={chunk_bytes/1e6:.2f} MB'
+
+
 def convert_target(paths, times, dim1, coord1, dim2, coord2, n1, n2, chunks, out_path):
 
     time_chunk, chunk1, chunk2 = chunks
@@ -51,9 +58,6 @@ def convert_target(paths, times, dim1, coord1, dim2, coord2, n1, n2, chunks, out
     data = da.stack(file_chunks, axis=0).rechunk({0: time_chunk, 1: chunk1, 2: chunk2})
 
     name = os.path.splitext(os.path.basename(out_path))[0]
-
-    chunk_bytes = np.prod(data.chunksize) * np.dtype(float_type).itemsize
-    print(f'{os.path.basename(out_path)}: chunks={data.chunksize}, chunk_size={chunk_bytes/1e6:.2f} MB')
 
     ds = xr.Dataset(
             {name: (('time', dim1, dim2), data)},
@@ -69,6 +73,8 @@ def convert_cross(
     out_dir = os.path.join(chunk_dir, kind)
     os.makedirs(out_dir, exist_ok=True)
 
+    info = chunk_info_str((len(times), jtot_t, itot_t), chunks)
+
     for var, (locstr, z_indices) in vars_xy.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
         y_coord = grid['yh' if locstr[1] == '1' else 'y'][::ratio_y]
@@ -83,11 +89,15 @@ def convert_cross(
                 out_path = os.path.join(out_dir, f'{var}_{z}.zarr')
                 convert_target(paths, times, 'y', y_coord, 'x', x_coord, jtot_t, itot_t, chunks, out_path)
 
+    return info
+
 
 def convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, chunks):
 
     out_dir = os.path.join(chunk_dir, 'xz')
     os.makedirs(out_dir, exist_ok=True)
+
+    info = chunk_info_str((len(times), ktot, itot), chunks)
 
     for var, locstr in vars_xz.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x']
@@ -97,6 +107,8 @@ def convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot
         out_path = os.path.join(out_dir, f'{var}_ymean.zarr')
         convert_target(paths, times, 'z', z_coord, 'x', x_coord, ktot, itot, chunks, out_path)
 
+    return info
+
 
 def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, itot_c, jtot_c, ktot, ratio_x, ratio_y, chunks):
 
@@ -104,6 +116,8 @@ def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, it
     os.makedirs(out_dir, exist_ok=True)
 
     time_chunk, chunk_z, chunk_y, chunk_x = chunks
+
+    info = chunk_info_str((len(times), ktot, jtot_c, itot_c), chunks)
 
     for var, locstr in vars_dump_c.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
@@ -117,14 +131,13 @@ def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, it
         file_chunks = [da.from_delayed(d, shape=(ktot, jtot_c, itot_c), dtype=float_type) for d in delayed_reads]
         data = da.stack(file_chunks, axis=0).rechunk({0: time_chunk, 1: chunk_z, 2: chunk_y, 3: chunk_x})
 
-        chunk_bytes = np.prod(data.chunksize) * np.dtype(float_type).itemsize
-        print(f'{os.path.basename(out_path)}: chunks={data.chunksize}, chunk_size={chunk_bytes/1e6:.2f} MB')
-
         ds = xr.Dataset(
                 {var: (('time', 'z', 'y', 'x'), data)},
                 coords={'time': times, 'z': z_coord, 'y': y_coord, 'x': x_coord})
 
         ds.to_zarr(out_path, mode='w', consolidated=False, encoding={var: {'compressors': [compressor]}})
+
+    return info
 
 
 if __name__ == '__main__':
@@ -136,9 +149,16 @@ if __name__ == '__main__':
     parser.add_argument('--cross_xy', action='store_true', default=False)
     parser.add_argument('--cross_xy_c', action='store_true', default=False)
     parser.add_argument('--dump_c', action='store_true', default=False)
+    parser.add_argument('--convert_all', action='store_true', default=False)
     parser.add_argument('--iotimeprec', type=int, default=1)
     parser.add_argument('--sample_time', type=int, default=3600)
     args = parser.parse_args()
+
+    if args.convert_all:
+        args.cross_xz = True
+        args.cross_xy = True
+        args.cross_xy_c = True
+        args.dump_c = True
 
     float_type = np.float32
 
@@ -242,21 +262,29 @@ if __name__ == '__main__':
     chunk_dir = os.path.join(work_dir, f'{args.start_time:07d}')
 
     if args.cross_xy_c:
-        convert_cross(
+        t0 = time.time()
+        info = convert_cross(
             work_dir, chunk_dir, 'xy_c', vars_xy, grid, file_times, times,
             itot_c, jtot_c, ratio_x, ratio_y, exp['chunks_xy_c'])
+        print(f'Converting xy_c: {info}, elapsed = {time.time() - t0:.2f} s')
 
     if args.cross_xy:
-        convert_cross(
+        t0 = time.time()
+        info = convert_cross(
             work_dir, chunk_dir, 'xy', vars_xy, grid, file_times, times,
             itot, jtot, 1, 1, exp['chunks_xy'])
+        print(f'Converting xy: {info}, elapsed = {time.time() - t0:.2f} s')
 
     if args.cross_xz:
-        convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, exp['chunks_xz'])
+        t0 = time.time()
+        info = convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, exp['chunks_xz'])
+        print(f'Converting xz: {info}, elapsed = {time.time() - t0:.2f} s')
 
     if args.dump_c:
-        convert_dump_c(
+        t0 = time.time()
+        info = convert_dump_c(
             work_dir, chunk_dir, vars_dump_c, grid, file_times, times,
             itot_c, jtot_c, ktot, ratio_x, ratio_y, exp['chunks_dump_c'])
+        print(f'Converting 3d_c: {info}, elapsed = {time.time() - t0:.2f} s')
 
     client.close()
