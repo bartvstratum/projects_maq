@@ -6,6 +6,7 @@ compute_env = dict(
     eddy = dict(
         project = None,
         partition = None,
+        post_partition = None,
         lfs_c = None,
         lfs_s = None,
         gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
@@ -19,6 +20,7 @@ compute_env = dict(
     ecmwf = dict(
         project = None,
         partition = 'par',
+        post_partition = 'par',
         lfs_c = None,
         lfs_s = None,
         gpt_path = '/home/nkbs/meteo/models/coefficients_veerman',
@@ -59,6 +61,8 @@ experiments = dict(
         end_time = 20*24*3600,
         time_chunk = 10*24*3600,
         wc_time = '48:00:00',
+        post_cpus = 6,
+        post_wc_time = '04:00:00',
         ),
 
     # Small domain for development testing.
@@ -80,6 +84,8 @@ experiments = dict(
         end_time = 3*one_day,
         time_chunk = 1*one_day,
         wc_time = '24:00:00',
+        post_cpus = 6,
+        post_wc_time = '01:00:00',
         chunks_xy_c = (10_000, 8, 32),
         chunks_xy = (10_000, 32, 128),
         chunks_xz = (10_000, 128, 128),

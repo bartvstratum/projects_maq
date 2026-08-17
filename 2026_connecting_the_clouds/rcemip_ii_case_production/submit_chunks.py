@@ -37,8 +37,28 @@ npy = exp['npy']
 
 account = env['project']
 partition = env['partition']
+post_partition = env['post_partition']
+post_cpus = exp['post_cpus']
+post_wc_time = exp['post_wc_time']
 lfs_c = env['lfs_c']
 lfs_s = env['lfs_s']
+
+
+def post_process_flags(start_time):
+    """
+    Which convert_bin_to_zarr.py conversions are active for a chunk starting
+    at `start_time`, based on the per-experiment output start times.
+    """
+    flags = []
+    if start_time >= exp['start_xy_c']:
+        flags.append('--cross_xy_c')
+    if start_time >= exp['start_xy']:
+        flags.append('--cross_xy')
+    if start_time >= exp['start_xz']:
+        flags.append('--cross_xz')
+    if start_time >= exp['start_dump_c']:
+        flags.append('--dump_c')
+    return flags
 
 
 """
@@ -56,6 +76,8 @@ for i in range(n_chunks):
     end_time = min(end_time, total_time)
 
     name = f'{identifier}{i:02d}'
+    post_flags = post_process_flags(start_time)
+    post_cmd = f'python {script_dir}/convert_bin_to_zarr.py --exp={args.exp} --start_time={start_time} --end_time={end_time} {" ".join(post_flags)}\n'
 
     def create_slurm_script():
         """
@@ -63,7 +85,7 @@ for i in range(n_chunks):
         """
         global previous_job_id
 
-        slurm_script = f'{work_dir}/chunk_{i}.slurm'
+        slurm_script = f'{work_dir}/run_{i}.slurm'
         with open(slurm_script, 'w') as f:
 
             f.write(f'#!/bin/bash\n\n')
@@ -100,7 +122,7 @@ for i in range(n_chunks):
                 f.write(f'srun ./microhh init rcemip_ii\n')
             f.write(f'srun ./microhh run rcemip_ii\n\n')
 
-            # TODO: post-processing + archiving.
+            # TODO: archiving.
 
         """
         Submit SLURM script, daisy-chained onto the previous chunk with `afterok`.
@@ -115,6 +137,39 @@ for i in range(n_chunks):
 
         print(f'Submitted chunk {i} ({name}) as job {previous_job_id}')
 
+        """
+        Create and submit post-processing SLURM script, daisy-chained onto the
+        run job (`afterok`) that produced its input, if there is anything to convert.
+        """
+        if post_flags:
+            post_name = f'{identifier[:-1]}p{i:02d}'
+
+            post_script = f'{work_dir}/post_{i}.slurm'
+            with open(post_script, 'w') as f:
+
+                f.write(f'#!/bin/bash\n\n')
+                if account is not None:
+                    f.write(f'#SBATCH --account={account}\n')
+                f.write(f'#SBATCH --job-name={post_name}\n')
+                f.write(f'#SBATCH --output={work_dir}/{post_name}-%j.out\n')
+                f.write(f'#SBATCH --error={work_dir}/{post_name}-%j.err\n')
+                f.write(f'#SBATCH --partition={post_partition}\n')
+                f.write(f'#SBATCH --ntasks=1\n')
+                f.write(f'#SBATCH --cpus-per-task={post_cpus}\n')
+                f.write(f'#SBATCH --time={post_wc_time}\n\n')
+
+                f.write(f'source ~/setup_env.sh\n\n')
+
+                f.write(f'cd {work_dir}\n\n')
+
+                f.write(post_cmd)
+
+            post_sbatch_cmd = ['sbatch', '--parsable', f'--dependency=afterok:{previous_job_id}', post_script]
+            post_result = subprocess.run(post_sbatch_cmd, capture_output=True, text=True, check=True)
+            post_job_id = post_result.stdout.strip()
+
+            print(f'Submitted post-processing for chunk {i} as job {post_job_id}')
+
 
     def create_bash_script():
         """
@@ -122,7 +177,7 @@ for i in range(n_chunks):
         """
         mhh_cmd = './microhh' if npx*npy == 1 else f'mpiexec -n {npx*npy} ./microhh'
 
-        bash_script = f'{work_dir}/chunk_{i}.sh'
+        bash_script = f'{work_dir}/run_{i}.sh'
         with open(bash_script, 'w') as f:
 
             f.write(f'#!/bin/bash\n\n')
@@ -131,6 +186,9 @@ for i in range(n_chunks):
             if start_time == 0:
                 f.write(f'{mhh_cmd} init rcemip_ii\n')
             f.write(f'{mhh_cmd} run rcemip_ii\n\n')
+
+            if post_flags:
+                f.write(post_cmd)
 
         os.chmod(bash_script, 0o755)
 
