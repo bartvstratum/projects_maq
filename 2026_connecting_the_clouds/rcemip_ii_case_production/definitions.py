@@ -35,6 +35,9 @@ env = compute_env['eddy']
 """
 Experiment specific settings.
 """
+one_day = 24*3600
+
+
 experiments = dict(
 
     # RCEMIP-I:
@@ -66,70 +69,24 @@ experiments = dict(
         delta_sst = 1.25,
         sw_cos_sst = True,
         ps = 101480,
-        xsize = 256*400,
+        xsize = 128*400,
         ysize = 64*400,
-        itot = 256,
+        itot = 128,
         jtot = 32,
         npx = 1,
         npy = 1,
         coarse_ratio_x = 4,
         coarse_ratio_y = 4,
-        end_time = 2*24*3600,
-        time_chunk = 24*3600,
-        wc_time = '12:00:00',
-        chunks_xy_c = (10_000, 8, 64),
-        chunks_xy = (10_000, 32, 256),
-        chunks_xz = (10_000, 128, 256),
-        chunks_dump_c = (10_000, 128, 8, 64),
-        ),
-
-    # Small domain for testing output.
-    test = dict(
-        name = '800m_small',
-        short_name = 'd8s',
-        mean_sst = 300,
-        delta_sst = 1.25,
-        sw_cos_sst = True,
-        ps = 101480,
-        xsize = 1920*800,
-        ysize = 256*800,
-        itot = 1920,
-        jtot = 256,
-        npx = 32,
-        npy = 16,
-        coarse_ratio_x = 4,
-        coarse_ratio_y = 4,
-        end_time = 4*24*3600,
-        time_chunk = 2*24*3600,
-        wc_time = '48:00:00',
-        chunks_xy_c = (10_000, 64, 480),
-        chunks_xy = (25, 256, 1920),
-        chunks_xz = (10_000, 128, 1920),
-        chunks_dump_c = (3, 128, 64, 480),
-        ),
-
-    # Small domain for testing output.
-    budget = dict(
-        name = 'budget_check',
-        short_name = 'budget',
-        mean_sst = 300,
-        delta_sst = 1.25,
-        sw_cos_sst = True,
-        ps = 101480,
-        xsize = 32*800,
-        ysize = 32*800,
-        itot = 32,
-        jtot = 32,
-        npx = 2,
-        npy = 4,
-        coarse_ratio_x = 4,
-        coarse_ratio_y = 4,
-        end_time = 2*24*3600,
-        time_chunk = 2*24*3600,
-        wc_time = '48:00:00',
-        chunks_xy_c = (10_000, 8, 8),
-        chunks_xy = (10_000, 32, 32),
-        chunks_xz = (10_000, 128, 32),
-        chunks_dump_c = (10_000, 128, 8, 8),
+        end_time = 3*one_day,
+        time_chunk = 1*one_day,
+        wc_time = '24:00:00',
+        chunks_xy_c = (10_000, 8, 32),
+        chunks_xy = (10_000, 32, 128),
+        chunks_xz = (10_000, 128, 128),
+        chunks_dump_c = (10_000, 128, 8, 32),
+        start_xy_c = 0,
+        start_xz = 0,
+        start_dump_c = 1*one_day,
+        start_xy = 2*one_day,
         ),
     )

@@ -16,17 +16,11 @@ args = parser.parse_args()
 
 exp = experiments[args.exp]
 work_dir = os.path.abspath(os.path.join(env['work_dir'], exp['name']))
-total_time = exp['end_time']
 
 
 """
 Settings. What output is saved when?
 """
-output_coarse_xy = total_time
-output_native_xz = total_time
-output_native_xy = total_time #1*24*3600
-output_coarse_3d = total_time #2*24*3600
-
 crosslist_xy = [
         'rrsg_bot', 'thl_fluxbot', 'qt_fluxbot',
         'lw_flux_dn', 'lw_flux_up', 'sw_flux_dn', 'sw_flux_up',
@@ -54,12 +48,10 @@ ini['time']['endtime'] = args.end_time
 ini['time']['savetime'] = args.end_time-args.start_time
 
 # Determine wheter to trigger cross/dump output:
-time_left = total_time - args.start_time
-
-save_coarse_xy = time_left <= output_coarse_xy
-save_native_xy = time_left <= output_native_xy
-save_native_xz = time_left <= output_native_xz
-save_coarse_3d = time_left <= output_coarse_3d
+save_coarse_xy = args.start_time >= exp['start_xy_c']
+save_native_xy = args.start_time >= exp['start_xy']
+save_native_xz = args.start_time >= exp['start_xz']
+save_coarse_3d = args.start_time >= exp['start_dump_c']
 
 print('Updating .ini settings...')
 if save_coarse_xy or save_native_xy or save_native_xz:
