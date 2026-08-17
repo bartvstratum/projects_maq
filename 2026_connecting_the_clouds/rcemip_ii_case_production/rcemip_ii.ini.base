@@ -127,5 +127,4 @@ savetime=None
 outputiter=1
 adaptivestep=true
 rkorder=3
-#iotimeprec=1
-iotimeprec=0
+iotimeprec=1

@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 import time
 
 import dask
@@ -20,6 +21,17 @@ def bin_path(work_dir, var, kind, locstr, file_time, z=None):
 
 def dump_c_path(work_dir, var, file_time):
     return os.path.join(work_dir, f'{var}_c.{file_time:07d}')
+
+
+def stats_nc_path(work_dir, case_name, file_time):
+    return os.path.join(work_dir, f'{case_name}.default.{file_time:07d}.nc')
+
+
+def archive_stats(work_dir, chunk_dir, case_name, start_time, iotimeprec):
+    file_time = start_time // 10**iotimeprec
+    src = stats_nc_path(work_dir, case_name, file_time)
+    os.makedirs(chunk_dir, exist_ok=True)
+    shutil.copy2(src, os.path.join(chunk_dir, os.path.basename(src)))
 
 
 def read_file(path, jtot_c, itot_c):
@@ -173,6 +185,7 @@ if __name__ == '__main__':
 
     exp = experiments[args.exp]
     work_dir = os.path.abspath(os.path.join(env['work_dir'], exp['name']))
+    archive_dir = os.path.abspath(os.path.join(env['archive_dir'], exp['name']))
 
     itot = exp['itot']
     jtot = exp['jtot']
@@ -259,7 +272,12 @@ if __name__ == '__main__':
     cluster = LocalCluster(n_workers=n_workers, threads_per_worker=threads_per_worker)
     client = Client(cluster)
 
-    chunk_dir = os.path.join(work_dir, f'{args.start_time:07d}')
+    chunk_idx = args.start_time // exp['time_chunk']
+    chunk_dir = os.path.join(archive_dir, f'chunk_{chunk_idx:03d}')
+
+    t0 = time.time()
+    archive_stats(work_dir, chunk_dir, 'rcemip_ii', args.start_time, args.iotimeprec)
+    print(f'Archiving stats file, elapsed = {time.time() - t0:.2f} s')
 
     if args.cross_xy_c:
         t0 = time.time()

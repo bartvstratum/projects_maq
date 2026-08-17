@@ -106,6 +106,8 @@ for i in range(n_chunks):
                 f.write(f'#SBATCH --mem=224G\n')
             f.write(f'#SBATCH --time={wc_time}\n\n')
 
+            f.write(f'set -euo pipefail\n\n')
+
             f.write(f'source ~/setup_env.sh\n\n')
 
             f.write(f'cd {work_dir}\n\n')
@@ -139,36 +141,38 @@ for i in range(n_chunks):
 
         """
         Create and submit post-processing SLURM script, daisy-chained onto the
-        run job (`afterok`) that produced its input, if there is anything to convert.
+        run job (`afterok`) that produced its input. Always run, even without
+        active cross/dump flags, since the stats file is archived every chunk.
         """
-        if post_flags:
-            post_name = f'{identifier[:-1]}p{i:02d}'
+        post_name = f'{identifier[:-1]}p{i:02d}'
 
-            post_script = f'{work_dir}/post_{i}.slurm'
-            with open(post_script, 'w') as f:
+        post_script = f'{work_dir}/post_{i}.slurm'
+        with open(post_script, 'w') as f:
 
-                f.write(f'#!/bin/bash\n\n')
-                if account is not None:
-                    f.write(f'#SBATCH --account={account}\n')
-                f.write(f'#SBATCH --job-name={post_name}\n')
-                f.write(f'#SBATCH --output={work_dir}/{post_name}-%j.out\n')
-                f.write(f'#SBATCH --error={work_dir}/{post_name}-%j.err\n')
-                f.write(f'#SBATCH --partition={post_partition}\n')
-                f.write(f'#SBATCH --ntasks=1\n')
-                f.write(f'#SBATCH --cpus-per-task={post_cpus}\n')
-                f.write(f'#SBATCH --time={post_wc_time}\n\n')
+            f.write(f'#!/bin/bash\n\n')
+            if account is not None:
+                f.write(f'#SBATCH --account={account}\n')
+            f.write(f'#SBATCH --job-name={post_name}\n')
+            f.write(f'#SBATCH --output={work_dir}/{post_name}-%j.out\n')
+            f.write(f'#SBATCH --error={work_dir}/{post_name}-%j.err\n')
+            f.write(f'#SBATCH --partition={post_partition}\n')
+            f.write(f'#SBATCH --ntasks=1\n')
+            f.write(f'#SBATCH --cpus-per-task={post_cpus}\n')
+            f.write(f'#SBATCH --time={post_wc_time}\n\n')
 
-                f.write(f'source ~/setup_env.sh\n\n')
+            f.write(f'set -euo pipefail\n\n')
 
-                f.write(f'cd {work_dir}\n\n')
+            f.write(f'source ~/setup_env.sh\n\n')
 
-                f.write(post_cmd)
+            f.write(f'cd {work_dir}\n\n')
 
-            post_sbatch_cmd = ['sbatch', '--parsable', f'--dependency=afterok:{previous_job_id}', post_script]
-            post_result = subprocess.run(post_sbatch_cmd, capture_output=True, text=True, check=True)
-            post_job_id = post_result.stdout.strip()
+            f.write(post_cmd)
 
-            print(f'Submitted post-processing for chunk {i} as job {post_job_id}')
+        post_sbatch_cmd = ['sbatch', '--parsable', f'--dependency=afterok:{previous_job_id}', post_script]
+        post_result = subprocess.run(post_sbatch_cmd, capture_output=True, text=True, check=True)
+        post_job_id = post_result.stdout.strip()
+
+        print(f'Submitted post-processing for chunk {i} as job {post_job_id}')
 
 
     def create_bash_script():
@@ -181,14 +185,14 @@ for i in range(n_chunks):
         with open(bash_script, 'w') as f:
 
             f.write(f'#!/bin/bash\n\n')
+            f.write(f'set -euo pipefail\n\n')
             f.write(f'cd {work_dir}\n\n')
             f.write(f'python {script_dir}/prepare_ini.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n\n')
             if start_time == 0:
                 f.write(f'{mhh_cmd} init rcemip_ii\n')
             f.write(f'{mhh_cmd} run rcemip_ii\n\n')
 
-            if post_flags:
-                f.write(post_cmd)
+            f.write(post_cmd)
 
         os.chmod(bash_script, 0o755)
 
