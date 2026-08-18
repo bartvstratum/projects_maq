@@ -120,9 +120,12 @@ for i in range(n_chunks):
             if lfs_c is not None and lfs_s is not None:
                 f.write(f'lfs setstripe -c {lfs_c} -S {lfs_s} {work_dir}\n\n')
 
+            mhh_log = f'{work_dir}/{name}-microhh-$SLURM_JOB_ID.out'
             if start_time == 0:
-                f.write(f'srun ./microhh init rcemip_ii\n')
-            f.write(f'srun ./microhh run rcemip_ii\n\n')
+                f.write(f'echo "Starting microhh init..."\n')
+                f.write(f'srun ./microhh init rcemip_ii &>> {mhh_log}\n')
+            f.write(f'echo "Starting microhh run..."\n')
+            f.write(f'srun ./microhh run rcemip_ii &>> {mhh_log}\n\n')
 
             # TODO: archiving.
 
@@ -188,9 +191,12 @@ for i in range(n_chunks):
             f.write(f'set -euo pipefail\n\n')
             f.write(f'cd {work_dir}\n\n')
             f.write(f'python {script_dir}/prepare_ini.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n\n')
+            mhh_log = f'{name}-microhh.out'
             if start_time == 0:
-                f.write(f'{mhh_cmd} init rcemip_ii\n')
-            f.write(f'{mhh_cmd} run rcemip_ii\n\n')
+                f.write(f'echo "Starting microhh init..."\n')
+                f.write(f'{mhh_cmd} init rcemip_ii &>> {mhh_log}\n')
+            f.write(f'echo "Starting microhh run..."\n')
+            f.write(f'{mhh_cmd} run rcemip_ii &>> {mhh_log}\n\n')
 
             f.write(post_cmd)
 

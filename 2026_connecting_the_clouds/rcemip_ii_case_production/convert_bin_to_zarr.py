@@ -153,6 +153,7 @@ def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, it
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp', required=True, help='Experiment name')
     parser.add_argument('--start_time', type=int, required=True)
@@ -194,7 +195,7 @@ if __name__ == '__main__':
     itot_c = itot // exp['coarse_ratio_x']
     jtot_c = jtot // exp['coarse_ratio_y']
 
-    print(f'Post-processing exp={args.exp}: itot={itot}, jtot={jtot} | itot_c={itot_c}, jtot_c={jtot_c}')
+    print(f'Post-processing...')
 
     grid = read_grid(work_dir, itot, jtot, ktot)
     ratio_x = exp['coarse_ratio_x']
@@ -277,32 +278,32 @@ if __name__ == '__main__':
 
     t0 = time.time()
     archive_stats(work_dir, chunk_dir, 'rcemip_ii', args.start_time, args.iotimeprec)
-    print(f'Archiving stats file, elapsed = {time.time() - t0:.2f} s')
+    print(f'- Archiving stats file, elapsed = {time.time() - t0:.2f} s')
 
     if args.cross_xy_c:
         t0 = time.time()
         info = convert_cross(
             work_dir, chunk_dir, 'xy_c', vars_xy, grid, file_times, times,
             itot_c, jtot_c, ratio_x, ratio_y, exp['chunks_xy_c'])
-        print(f'Converting xy_c: {info}, elapsed = {time.time() - t0:.2f} s')
+        print(f'- Converting xy_c: {info}, elapsed = {time.time() - t0:.2f} s')
 
     if args.cross_xy:
         t0 = time.time()
         info = convert_cross(
             work_dir, chunk_dir, 'xy', vars_xy, grid, file_times, times,
             itot, jtot, 1, 1, exp['chunks_xy'])
-        print(f'Converting xy: {info}, elapsed = {time.time() - t0:.2f} s')
+        print(f'- Converting xy: {info}, elapsed = {time.time() - t0:.2f} s')
 
     if args.cross_xz:
         t0 = time.time()
         info = convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, exp['chunks_xz'])
-        print(f'Converting xz: {info}, elapsed = {time.time() - t0:.2f} s')
+        print(f'- Converting xz: {info}, elapsed = {time.time() - t0:.2f} s')
 
     if args.dump_c:
         t0 = time.time()
         info = convert_dump_c(
             work_dir, chunk_dir, vars_dump_c, grid, file_times, times,
             itot_c, jtot_c, ktot, ratio_x, ratio_y, exp['chunks_dump_c'])
-        print(f'Converting 3d_c: {info}, elapsed = {time.time() - t0:.2f} s')
+        print(f'- Converting 3d_c: {info}, elapsed = {time.time() - t0:.2f} s')
 
     client.close()

@@ -55,7 +55,7 @@ save_coarse_3d = args.start_time >= exp['start_dump_c']
 
 print('Updating .ini settings...')
 if save_coarse_xy or save_native_xy or save_native_xz:
-    print('- Enabling cross-sections')
+    print('- Enabling cross-sections (global)')
     ini['cross']['swcross'] = True
 
 if save_coarse_xy:
@@ -78,5 +78,3 @@ if save_coarse_3d:
 Write final .ini file.
 """
 save_ini(ini, f'{work_dir}/rcemip_ii.ini')
-
-print('Saved ini!\n')

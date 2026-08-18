@@ -31,7 +31,7 @@ compute_env = dict(
         ),
     )
 
-env = compute_env['ecmwf']
+env = compute_env['eddy']
 
 
 """
