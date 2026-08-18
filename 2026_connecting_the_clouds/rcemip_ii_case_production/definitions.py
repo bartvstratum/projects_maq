@@ -31,7 +31,7 @@ compute_env = dict(
         ),
     )
 
-env = compute_env['eddy']
+env = compute_env['ecmwf']
 
 
 """
@@ -44,7 +44,7 @@ experiments = dict(
 
     # RCEMIP-I:
     rcemip = dict(
-        name = 'rcemip_1',
+        name = 'rcemip-i',
         short_name = 'rcemip',
         mean_sst = 300,
         delta_sst = 2.5,
@@ -54,8 +54,8 @@ experiments = dict(
         ysize = 256*400,
         itot = 256,
         jtot = 256,
-        npx = 1,
-        npy = 1,
+        npx = 16,
+        npy = 16,
         coarse_ratio_x = 8,
         coarse_ratio_y = 8,
         end_time = 16*24*3600,

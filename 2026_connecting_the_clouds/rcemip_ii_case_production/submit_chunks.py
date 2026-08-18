@@ -106,9 +106,9 @@ for i in range(n_chunks):
                 f.write(f'#SBATCH --mem=224G\n')
             f.write(f'#SBATCH --time={wc_time}\n\n')
 
-            f.write(f'set -euo pipefail\n\n')
-
             f.write(f'source ~/setup_env.sh\n\n')
+
+            f.write(f'set -euo pipefail\n\n')
 
             f.write(f'cd {work_dir}\n\n')
 
@@ -160,9 +160,9 @@ for i in range(n_chunks):
             f.write(f'#SBATCH --cpus-per-task={post_cpus}\n')
             f.write(f'#SBATCH --time={post_wc_time}\n\n')
 
-            f.write(f'set -euo pipefail\n\n')
-
             f.write(f'source ~/setup_env.sh\n\n')
+
+            f.write(f'set -euo pipefail\n\n')
 
             f.write(f'cd {work_dir}\n\n')
 
