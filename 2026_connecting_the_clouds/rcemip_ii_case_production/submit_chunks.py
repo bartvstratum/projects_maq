@@ -96,6 +96,8 @@ for i in range(n_chunks):
             f.write(f'#SBATCH --job-name={name}\n')
             f.write(f'#SBATCH --output={work_dir}/{name}-%j.out\n')
             f.write(f'#SBATCH --error={work_dir}/{name}-%j.err\n')
+            f.write(f'#SBATCH --mail-type=FAIL\n')
+            f.write(f'#SBATCH --mail-user=lumi@cloudysky.cc\n')
             f.write(f'#SBATCH --partition={partition}\n')
             f.write(f'#SBATCH --ntasks={npx*npy}\n')
             if partition == 'gpu_h100' or partition == 'gpu_a100':
@@ -160,6 +162,8 @@ for i in range(n_chunks):
             f.write(f'#SBATCH --job-name={post_name}\n')
             f.write(f'#SBATCH --output={work_dir}/{post_name}-%j.out\n')
             f.write(f'#SBATCH --error={work_dir}/{post_name}-%j.err\n')
+            f.write(f'#SBATCH --mail-type=FAIL\n')
+            f.write(f'#SBATCH --mail-user=lumi@cloudysky.cc\n')
             f.write(f'#SBATCH --partition={post_partition}\n')
             f.write(f'#SBATCH --ntasks=1\n')
             f.write(f'#SBATCH --cpus-per-task={post_cpus}\n')
