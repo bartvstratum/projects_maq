@@ -7,23 +7,11 @@ import dask
 import dask.array as da
 import numpy as np
 import xarray as xr
-import zarr
 from dask.distributed import Client, LocalCluster
 from zarr.codecs import BloscCodec
 
 from definitions import experiments, env
 from expected_output import vars_xy, vars_xz, vars_dump_c
-
-
-def check_completeness(store_path):
-    ds = xr.open_zarr(store_path, consolidated=False)
-    if len(ds.data_vars) != 1:
-        raise ValueError(f'{store_path} has {len(ds.data_vars)} data variables, expected 1')
-
-    var_name = next(iter(ds.data_vars))
-    array = zarr.open_group(store=str(store_path), mode='r')[var_name]
-
-    return array.nchunks == array.nchunks_initialized
 
 
 def bin_path(work_dir, var, kind, locstr, file_time, z=None):
@@ -40,11 +28,12 @@ def stats_nc_path(work_dir, case_name, file_time):
     return os.path.join(work_dir, f'{case_name}.default.{file_time:07d}.nc')
 
 
-def archive_stats(work_dir, chunk_dir, case_name, start_time, iotimeprec):
+def stage_stats(work_dir, chunk_dir, case_name, start_time, iotimeprec):
     file_time = start_time // 10**iotimeprec
     src = stats_nc_path(work_dir, case_name, file_time)
     os.makedirs(chunk_dir, exist_ok=True)
     shutil.copy2(src, os.path.join(chunk_dir, os.path.basename(src)))
+    return os.path.basename(src)
 
 
 def read_file(path, jtot_c, itot_c):
@@ -89,7 +78,6 @@ def convert_target(paths, times, dim1, coord1, dim2, coord2, n1, n2, chunks, out
             coords={'time': times, dim1: coord1, dim2: coord2})
 
     ds.to_zarr(out_path, mode='w', consolidated=False, encoding={name: {'compressors': [compressor]}})
-    return check_completeness(out_path)
 
 
 def convert_cross(
@@ -101,9 +89,6 @@ def convert_cross(
 
     info = chunk_info_str((len(times), jtot_t, itot_t), chunks)
 
-    n_ok = 0
-    n_total = 0
-
     for var, (locstr, z_indices) in vars_xy.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
         y_coord = grid['yh' if locstr[1] == '1' else 'y'][::ratio_y]
@@ -111,16 +96,14 @@ def convert_cross(
         if z_indices is None:
             paths = [bin_path(work_dir, var, kind, locstr, ft) for ft in file_times]
             out_path = os.path.join(out_dir, f'{var}.zarr')
-            n_ok += convert_target(paths, times, 'y', y_coord, 'x', x_coord, jtot_t, itot_t, chunks, out_path)
-            n_total += 1
+            convert_target(paths, times, 'y', y_coord, 'x', x_coord, jtot_t, itot_t, chunks, out_path)
         else:
             for z in z_indices:
                 paths = [bin_path(work_dir, var, kind, locstr, ft, z) for ft in file_times]
                 out_path = os.path.join(out_dir, f'{var}_{z}.zarr')
-                n_ok += convert_target(paths, times, 'y', y_coord, 'x', x_coord, jtot_t, itot_t, chunks, out_path)
-                n_total += 1
+                convert_target(paths, times, 'y', y_coord, 'x', x_coord, jtot_t, itot_t, chunks, out_path)
 
-    return info, n_ok, n_total
+    return info
 
 
 def convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, chunks):
@@ -130,19 +113,15 @@ def convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot
 
     info = chunk_info_str((len(times), ktot, itot), chunks)
 
-    n_ok = 0
-    n_total = 0
-
     for var, locstr in vars_xz.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x']
         z_coord = grid['zh' if locstr[2] == '1' else 'z']
 
         paths = [bin_path(work_dir, f'{var}_ymean', 'xz', locstr, ft) for ft in file_times]
         out_path = os.path.join(out_dir, f'{var}_ymean.zarr')
-        n_ok += convert_target(paths, times, 'z', z_coord, 'x', x_coord, ktot, itot, chunks, out_path)
-        n_total += 1
+        convert_target(paths, times, 'z', z_coord, 'x', x_coord, ktot, itot, chunks, out_path)
 
-    return info, n_ok, n_total
+    return info
 
 
 def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, itot_c, jtot_c, ktot, ratio_x, ratio_y, chunks):
@@ -153,9 +132,6 @@ def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, it
     time_chunk, chunk_z, chunk_y, chunk_x = chunks
 
     info = chunk_info_str((len(times), ktot, jtot_c, itot_c), chunks)
-
-    n_ok = 0
-    n_total = 0
 
     for var, locstr in vars_dump_c.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
@@ -174,10 +150,8 @@ def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, it
                 coords={'time': times, 'z': z_coord, 'y': y_coord, 'x': x_coord})
 
         ds.to_zarr(out_path, mode='w', consolidated=False, encoding={var: {'compressors': [compressor]}})
-        n_ok += check_completeness(out_path)
-        n_total += 1
 
-    return info, n_ok, n_total
+    return info
 
 
 if __name__ == '__main__':
@@ -232,40 +206,36 @@ if __name__ == '__main__':
     client = Client(cluster)
 
     chunk_idx = args.start_time // exp['time_chunk']
-    chunk_dir = os.path.join(work_dir, f'chunk_{chunk_idx:03d}')
+    chunk_dir = os.path.join(work_dir, 'to_archive', f'chunk_{chunk_idx:03d}')
 
     t0 = time.time()
-    archive_stats(work_dir, chunk_dir, 'rcemip_ii', args.start_time, args.iotimeprec)
-    print(f'- Archiving stats file, elapsed = {time.time() - t0:.2f} s')
+    stats_name = stage_stats(work_dir, chunk_dir, 'rcemip_ii', args.start_time, args.iotimeprec)
+    print(f'- Staging {stats_name}, elapsed = {time.time() - t0:.2f} s')
 
     if args.cross_xy_c:
         t0 = time.time()
-        info, n_ok, n_total = convert_cross(
+        info = convert_cross(
             work_dir, chunk_dir, 'xy_c', vars_xy, grid, file_times, times,
             itot_c, jtot_c, ratio_x, ratio_y, exp['chunks_xy_c'])
         print(f'- Converting xy_c: {info}, elapsed = {time.time() - t0:.2f} s')
-        print(f'- Completeness xy_c: {n_ok}/{n_total} okay')
 
     if args.cross_xy:
         t0 = time.time()
-        info, n_ok, n_total = convert_cross(
+        info = convert_cross(
             work_dir, chunk_dir, 'xy', vars_xy, grid, file_times, times,
             itot, jtot, 1, 1, exp['chunks_xy'])
         print(f'- Converting xy: {info}, elapsed = {time.time() - t0:.2f} s')
-        print(f'- Completeness xy: {n_ok}/{n_total} okay')
 
     if args.cross_xz:
         t0 = time.time()
-        info, n_ok, n_total = convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, exp['chunks_xz'])
+        info = convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, exp['chunks_xz'])
         print(f'- Converting xz: {info}, elapsed = {time.time() - t0:.2f} s')
-        print(f'- Completeness xz: {n_ok}/{n_total} okay')
 
     if args.dump_c:
         t0 = time.time()
-        info, n_ok, n_total = convert_dump_c(
+        info = convert_dump_c(
             work_dir, chunk_dir, vars_dump_c, grid, file_times, times,
             itot_c, jtot_c, ktot, ratio_x, ratio_y, exp['chunks_dump_c'])
         print(f'- Converting 3d_c: {info}, elapsed = {time.time() - t0:.2f} s')
-        print(f'- Completeness 3d_c: {n_ok}/{n_total} okay')
 
     client.close()

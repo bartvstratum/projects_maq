@@ -79,6 +79,7 @@ for i in range(n_chunks):
     post_flags = post_process_flags(start_time)
     convert_cmd = f'python {script_dir}/convert_bin_to_zarr.py --exp={args.exp} --start_time={start_time} --end_time={end_time} {post_flags}\n'
     archive_cmd = f'python {script_dir}/archive.py --exp={args.exp} --start_time={start_time} {post_flags}\n'
+    validate_cmd = f'python {script_dir}/validate_integrity.py --exp={args.exp} --start_time={start_time} {post_flags}\n'
 
     def create_slurm_script():
         """
@@ -172,6 +173,7 @@ for i in range(n_chunks):
 
             f.write(convert_cmd)
             f.write(archive_cmd)
+            f.write(validate_cmd)
 
         post_sbatch_cmd = ['sbatch', '--parsable', f'--dependency=afterok:{previous_job_id}', post_script]
         post_result = subprocess.run(post_sbatch_cmd, capture_output=True, text=True, check=True)
@@ -202,6 +204,7 @@ for i in range(n_chunks):
 
             f.write(convert_cmd)
             f.write(archive_cmd)
+            f.write(validate_cmd)
 
         os.chmod(bash_script, 0o755)
 

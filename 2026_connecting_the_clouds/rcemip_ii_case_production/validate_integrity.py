@@ -1,4 +1,5 @@
 import argparse
+import filecmp
 import time
 from pathlib import Path
 
@@ -7,21 +8,28 @@ from expected_output import expected_zarr_relpaths
 from filesystem_backend import Local_backend
 
 
-def archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend):
+def check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, backend):
     expected = expected_zarr_relpaths()
+    mismatches = []
 
     for kind in kinds:
         t0 = time.time()
+        n_files = 0
 
         for relpath in expected[kind]:
             to_archive_path = to_archive_chunk_dir / kind / relpath
-            archive_path = archive_chunk_dir / kind / relpath
             from_archive_path = from_archive_chunk_dir / kind / relpath
 
-            backend.copy_tree(to_archive_path, archive_path)
-            backend.copy_tree(archive_path, from_archive_path)
+            for entry in backend.list_tree(to_archive_path):
+                f1 = to_archive_path / entry.relpath
+                f2 = from_archive_path / entry.relpath
+                n_files += 1
+                if not filecmp.cmp(f1, f2, shallow=False):
+                    mismatches.append(str(f2))
 
-        print(f'- Archived {kind}: {len(expected[kind])} stores, elapsed = {time.time() - t0:.2f} s')
+        print(f'- Byte-compared {kind}: {n_files} files, elapsed = {time.time() - t0:.2f} s')
+
+    return mismatches
 
 
 if __name__ == '__main__':
@@ -42,17 +50,15 @@ if __name__ == '__main__':
         args.cross_xy_c = True
         args.dump_c = True
 
-    print('Archiving...')
+    print('Validating integrity...')
 
     exp = experiments[args.exp]
     work_dir = Path(env['work_dir']) / exp['name']
-    archive_dir = Path(env['archive_dir']) / exp['name']
 
     chunk_idx = args.start_time // exp['time_chunk']
     chunk_name = f'chunk_{chunk_idx:03d}'
 
     to_archive_chunk_dir = work_dir / 'to_archive' / chunk_name
-    archive_chunk_dir = archive_dir / chunk_name
     from_archive_chunk_dir = work_dir / 'from_archive' / chunk_name
 
     kinds = []
@@ -66,4 +72,10 @@ if __name__ == '__main__':
         kinds.append('3d_c')
 
     backend = Local_backend()
-    archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend)
+    mismatches = check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, backend)
+
+    if mismatches:
+        print(f'Byte-identical check: FAILED, {len(mismatches)} file(s) differ: {mismatches}...')
+        raise ValueError(f'{len(mismatches)} file(s) differ between to_archive and from_archive: {mismatches}')
+
+    print('Byte-identical check: PASSED...')
