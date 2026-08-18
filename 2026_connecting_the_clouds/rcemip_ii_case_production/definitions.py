@@ -1,3 +1,5 @@
+from filesystem_backend import Local_backend
+
 """
 Compute environments.
 Make sure all paths are ABSOLUTE!
@@ -14,7 +16,8 @@ compute_env = dict(
         microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
         #microhh_bin = '/home/bart/meteo/models/microhh/build_spdp_cpumpi/microhh',
         work_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/experiments',
-        archive_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/archive'
+        archive_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/archive',
+        backend = Local_backend,
         ),
 
     ecmwf = dict(
@@ -28,6 +31,7 @@ compute_env = dict(
         microhh_bin = '/home/nkbs/meteo/models/microhh/build_sp_dpfft_cpumpi/microhh',
         work_dir = '/scratch/nkbs/',
         archive_dir = '/scratch/nkbs/archive',
+        backend = Local_backend,
         ),
     )
 

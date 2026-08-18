@@ -4,7 +4,6 @@ from pathlib import Path
 
 from definitions import experiments, env
 from expected_output import expected_zarr_relpaths
-from filesystem_backend import Local_backend
 
 
 def archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend):
@@ -65,5 +64,5 @@ if __name__ == '__main__':
     if args.dump_c:
         kinds.append('3d_c')
 
-    backend = Local_backend()
+    backend = env['backend']()
     archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend)
