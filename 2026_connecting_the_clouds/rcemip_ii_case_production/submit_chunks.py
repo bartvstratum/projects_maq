@@ -58,7 +58,7 @@ def post_process_flags(start_time):
         flags.append('--cross_xz')
     if start_time >= exp['start_dump_c']:
         flags.append('--dump_c')
-    return flags
+    return ' '.join(flags)
 
 
 """
@@ -77,7 +77,8 @@ for i in range(n_chunks):
 
     name = f'{identifier}{i:02d}'
     post_flags = post_process_flags(start_time)
-    post_cmd = f'python {script_dir}/convert_bin_to_zarr.py --exp={args.exp} --start_time={start_time} --end_time={end_time} {" ".join(post_flags)}\n'
+    convert_cmd = f'python {script_dir}/convert_bin_to_zarr.py --exp={args.exp} --start_time={start_time} --end_time={end_time} {post_flags}\n'
+    archive_cmd = f'python {script_dir}/archive.py --exp={args.exp} --start_time={start_time} {post_flags}\n'
 
     def create_slurm_script():
         """
@@ -169,7 +170,8 @@ for i in range(n_chunks):
 
             f.write(f'cd {work_dir}\n\n')
 
-            f.write(post_cmd)
+            f.write(convert_cmd)
+            f.write(archive_cmd)
 
         post_sbatch_cmd = ['sbatch', '--parsable', f'--dependency=afterok:{previous_job_id}', post_script]
         post_result = subprocess.run(post_sbatch_cmd, capture_output=True, text=True, check=True)
@@ -198,7 +200,8 @@ for i in range(n_chunks):
             f.write(f'echo "Starting microhh run..."\n')
             f.write(f'{mhh_cmd} run rcemip_ii &>> {mhh_log}\n\n')
 
-            f.write(post_cmd)
+            f.write(convert_cmd)
+            f.write(archive_cmd)
 
         os.chmod(bash_script, 0o755)
 
