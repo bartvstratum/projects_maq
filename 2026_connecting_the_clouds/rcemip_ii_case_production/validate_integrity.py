@@ -36,6 +36,22 @@ def check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, ba
     return mismatches
 
 
+def store_has_missing_chunks(store_path):
+    ds = xr.open_zarr(store_path, consolidated=False)
+    var_name = next(iter(ds.data_vars))
+    array = zarr.open_group(store=str(store_path), mode='r')[var_name]
+
+    return array.nchunks_initialized != array.nchunks
+
+
+def store_non_finite_count(store_path):
+    ds = xr.open_zarr(store_path, consolidated=False)
+    var_name = next(iter(ds.data_vars))
+    data = ds[var_name].values
+
+    return int((~np.isfinite(data)).sum())
+
+
 def check_no_missing_chunks(chunk_dir, kinds):
     expected = expected_zarr_relpaths()
     stores_with_missing_chunks = []
@@ -48,11 +64,7 @@ def check_no_missing_chunks(chunk_dir, kinds):
             store_path = chunk_dir / kind / relpath
             n_stores += 1
 
-            ds = xr.open_zarr(store_path, consolidated=False)
-            var_name = next(iter(ds.data_vars))
-            array = zarr.open_group(store=str(store_path), mode='r')[var_name]
-
-            if array.nchunks_initialized != array.nchunks:
+            if store_has_missing_chunks(store_path):
                 stores_with_missing_chunks.append(str(store_path))
 
         print(f'- Checked for missing chunks in {kind}: {n_stores} stores, elapsed = {time.time() - t0:.2f} s')
@@ -72,11 +84,7 @@ def check_decode_finite(chunk_dir, kinds):
             store_path = chunk_dir / kind / relpath
             n_stores += 1
 
-            ds = xr.open_zarr(store_path, consolidated=False)
-            var_name = next(iter(ds.data_vars))
-            data = ds[var_name].values
-
-            n_bad = int((~np.isfinite(data)).sum())
+            n_bad = store_non_finite_count(store_path)
             if n_bad > 0:
                 stores_with_non_finite.append((str(store_path), n_bad))
 
