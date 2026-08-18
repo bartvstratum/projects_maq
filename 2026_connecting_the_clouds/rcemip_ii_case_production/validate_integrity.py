@@ -3,6 +3,10 @@ import filecmp
 import time
 from pathlib import Path
 
+import numpy as np
+import xarray as xr
+import zarr
+
 from definitions import experiments, env
 from expected_output import expected_zarr_relpaths
 from filesystem_backend import Local_backend
@@ -30,6 +34,55 @@ def check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, ba
         print(f'- Byte-compared {kind}: {n_files} files, elapsed = {time.time() - t0:.2f} s')
 
     return mismatches
+
+
+def check_no_missing_chunks(chunk_dir, kinds):
+    expected = expected_zarr_relpaths()
+    stores_with_missing_chunks = []
+
+    for kind in kinds:
+        t0 = time.time()
+        n_stores = 0
+
+        for relpath in expected[kind]:
+            store_path = chunk_dir / kind / relpath
+            n_stores += 1
+
+            ds = xr.open_zarr(store_path, consolidated=False)
+            var_name = next(iter(ds.data_vars))
+            array = zarr.open_group(store=str(store_path), mode='r')[var_name]
+
+            if array.nchunks_initialized != array.nchunks:
+                stores_with_missing_chunks.append(str(store_path))
+
+        print(f'- Checked for missing chunks in {kind}: {n_stores} stores, elapsed = {time.time() - t0:.2f} s')
+
+    return stores_with_missing_chunks
+
+
+def check_decode_finite(chunk_dir, kinds):
+    expected = expected_zarr_relpaths()
+    stores_with_non_finite = []
+
+    for kind in kinds:
+        t0 = time.time()
+        n_stores = 0
+
+        for relpath in expected[kind]:
+            store_path = chunk_dir / kind / relpath
+            n_stores += 1
+
+            ds = xr.open_zarr(store_path, consolidated=False)
+            var_name = next(iter(ds.data_vars))
+            data = ds[var_name].values
+
+            n_bad = int((~np.isfinite(data)).sum())
+            if n_bad > 0:
+                stores_with_non_finite.append((str(store_path), n_bad))
+
+        print(f'- Decoded and checked for non-finite values in {kind}: {n_stores} stores, elapsed = {time.time() - t0:.2f} s')
+
+    return stores_with_non_finite
 
 
 if __name__ == '__main__':
@@ -78,4 +131,20 @@ if __name__ == '__main__':
         print(f'Byte-identical check: FAILED, {len(mismatches)} file(s) differ: {mismatches}...')
         raise ValueError(f'{len(mismatches)} file(s) differ between to_archive and from_archive: {mismatches}')
 
-    print('Byte-identical check: PASSED...')
+    print('- Byte-identical check: PASSED...')
+
+    stores_with_missing_chunks = check_no_missing_chunks(from_archive_chunk_dir, kinds)
+
+    if stores_with_missing_chunks:
+        print(f'No-missing-chunks check: FAILED, {len(stores_with_missing_chunks)} store(s) incomplete: {stores_with_missing_chunks}...')
+        raise ValueError(f'{len(stores_with_missing_chunks)} store(s) have missing chunks: {stores_with_missing_chunks}')
+
+    print('- No-missing-chunks check: PASSED...')
+
+    stores_with_non_finite = check_decode_finite(from_archive_chunk_dir, kinds)
+
+    if stores_with_non_finite:
+        print(f'Decode/finite check: FAILED, {len(stores_with_non_finite)} store(s) contain non-finite values: {stores_with_non_finite}...')
+        raise ValueError(f'{len(stores_with_non_finite)} store(s) contain non-finite values: {stores_with_non_finite}')
+
+    print('- Decode/finite check: PASSED...')
