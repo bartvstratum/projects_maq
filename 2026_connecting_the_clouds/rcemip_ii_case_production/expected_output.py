@@ -68,6 +68,26 @@ vars_dump_c = dict(
 )
 
 
+restart_vars = [
+    'dbdz_mo', 'dudz_mo', 'dvdz_mo', 'obuk',
+    'qg', 'qr', 'qs', 'qt', 'qt_bot',
+    'thermo_basestate', 'thl', 'thl_bot',
+    'time', 'u', 'v', 'w',
+]
+
+restart_vars_init = [
+    'fftwplan', 'grid', 'rhoref', 'qt_bot_in', 'thl_bot_in',
+]
+
+restart_extra_init = ['rcemip_ii.ini', 'rcemip_ii_input.nc']
+
+
+def expected_checkpoint_filenames(file_time):
+    filenames = [f'{var}.{file_time:07d}' for var in restart_vars]
+    filenames += [f'{var}.0000000' for var in restart_vars_init] + restart_extra_init
+    return filenames
+
+
 def expected_zarr_relpaths():
     relpaths = {}
 

@@ -11,7 +11,7 @@ from dask.distributed import Client, LocalCluster
 from zarr.codecs import BloscCodec
 
 from definitions import experiments, env
-from expected_output import vars_xy, vars_xz, vars_dump_c
+from expected_output import vars_xy, vars_xz, vars_dump_c, expected_checkpoint_filenames
 
 
 def bin_path(work_dir, var, kind, locstr, file_time, z=None):
@@ -34,6 +34,17 @@ def stage_stats(work_dir, chunk_dir, case_name, start_time, iotimeprec):
     os.makedirs(chunk_dir, exist_ok=True)
     shutil.copy2(src, os.path.join(chunk_dir, os.path.basename(src)))
     return os.path.basename(src)
+
+
+def stage_checkpoint(work_dir, chunk_dir, file_time):
+    out_dir = os.path.join(chunk_dir, 'checkpoint')
+    os.makedirs(out_dir, exist_ok=True)
+
+    filenames = expected_checkpoint_filenames(file_time)
+    for filename in filenames:
+        shutil.copy2(os.path.join(work_dir, filename), os.path.join(out_dir, filename))
+
+    return filenames
 
 
 def read_file(path, jtot_c, itot_c):
@@ -164,6 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('--cross_xy', action='store_true', default=False)
     parser.add_argument('--cross_xy_c', action='store_true', default=False)
     parser.add_argument('--dump_c', action='store_true', default=False)
+    parser.add_argument('--checkpoint', action='store_true', default=False)
     parser.add_argument('--convert_all', action='store_true', default=False)
     parser.add_argument('--iotimeprec', type=int, default=1)
     parser.add_argument('--sample_time', type=int, default=3600)
@@ -237,5 +249,11 @@ if __name__ == '__main__':
             work_dir, chunk_dir, vars_dump_c, grid, file_times, times,
             itot_c, jtot_c, ktot, ratio_x, ratio_y, exp['chunks_dump_c'])
         print(f'- Converting 3d_c: {info}, elapsed = {time.time() - t0:.2f} s')
+
+    if args.checkpoint:
+        t0 = time.time()
+        file_time = args.end_time // 10**args.iotimeprec
+        filenames = stage_checkpoint(work_dir, chunk_dir, file_time)
+        print(f'- Staging checkpoint: {len(filenames)} files, elapsed = {time.time() - t0:.2f} s')
 
     client.close()

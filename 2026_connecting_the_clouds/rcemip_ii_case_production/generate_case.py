@@ -81,6 +81,7 @@ rcemip_ii_input(
         mean_sst = exp['mean_sst'],
         d_sst = exp['delta_sst'],
         ps = exp['ps'],
+        restart_freq = exp['restart_freq'],
         coef_sw = coef_sw,
         coef_lw = coef_lw,
         work_dir = work_dir,

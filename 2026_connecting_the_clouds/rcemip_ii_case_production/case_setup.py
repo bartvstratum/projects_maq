@@ -102,6 +102,7 @@ def rcemip_ii_input(
         mean_sst,
         d_sst,
         ps,
+        restart_freq,
         coef_sw,
         coef_lw,
         work_dir,
@@ -146,6 +147,8 @@ def rcemip_ii_input(
     ini['buffer']['zstart'] = 0.75*zsize
 
     ini['thermo']['pbot'] = ps
+
+    ini['time']['savetime'] = restart_freq
 
     # For `!sw_cos_sst`:
     exn = exner(ps)

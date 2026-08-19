@@ -8,7 +8,7 @@ import xarray as xr
 import zarr
 
 from definitions import experiments, env
-from expected_output import expected_zarr_relpaths
+from expected_output import expected_zarr_relpaths, expected_checkpoint_filenames
 
 
 def check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, backend):
@@ -32,6 +32,20 @@ def check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, ba
 
         print(f'- Byte-compared {kind}: {n_files} files, elapsed = {time.time() - t0:.2f} s')
 
+    return mismatches
+
+
+def check_checkpoint_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, filenames, backend):
+    t0 = time.time()
+    mismatches = []
+
+    for filename in filenames:
+        f1 = to_archive_chunk_dir / 'checkpoint' / filename
+        f2 = from_archive_chunk_dir / 'checkpoint' / filename
+        if not filecmp.cmp(f1, f2, shallow=False):
+            mismatches.append(str(f2))
+
+    print(f'- Byte-compared checkpoint: {len(filenames)} files, elapsed = {time.time() - t0:.2f} s')
     return mismatches
 
 
@@ -97,11 +111,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp', required=True, help='Experiment name')
     parser.add_argument('--start_time', type=int, required=True)
+    parser.add_argument('--end_time', type=int, required=True)
     parser.add_argument('--cross_xz', action='store_true', default=False)
     parser.add_argument('--cross_xy', action='store_true', default=False)
     parser.add_argument('--cross_xy_c', action='store_true', default=False)
     parser.add_argument('--dump_c', action='store_true', default=False)
+    parser.add_argument('--checkpoint', action='store_true', default=False)
     parser.add_argument('--convert_all', action='store_true', default=False)
+    parser.add_argument('--iotimeprec', type=int, default=1)
     args = parser.parse_args()
 
     if args.convert_all:
@@ -133,6 +150,11 @@ if __name__ == '__main__':
 
     backend = env['backend']()
     mismatches = check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, backend)
+
+    if args.checkpoint:
+        file_time = args.end_time // 10**args.iotimeprec
+        filenames = expected_checkpoint_filenames(file_time)
+        mismatches += check_checkpoint_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, filenames, backend)
 
     if mismatches:
         print(f'Byte-identical check: FAILED, {len(mismatches)} file(s) differ: {mismatches}...')

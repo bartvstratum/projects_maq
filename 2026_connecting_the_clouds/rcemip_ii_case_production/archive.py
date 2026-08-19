@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 
 from definitions import experiments, env
-from expected_output import expected_zarr_relpaths
+from expected_output import expected_zarr_relpaths, expected_checkpoint_filenames
 
 
 def archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend):
@@ -23,16 +23,38 @@ def archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_di
         print(f'- Archived {kind}: {len(expected[kind])} stores, elapsed = {time.time() - t0:.2f} s')
 
 
+def archive_checkpoint(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, filenames, backend):
+    t0 = time.time()
+
+    archive_dir = archive_chunk_dir / 'checkpoint'
+    from_archive_dir = from_archive_chunk_dir / 'checkpoint'
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    from_archive_dir.mkdir(parents=True, exist_ok=True)
+
+    for filename in filenames:
+        to_archive_path = to_archive_chunk_dir / 'checkpoint' / filename
+        archive_path = archive_dir / filename
+        from_archive_path = from_archive_dir / filename
+
+        backend.copy_file(to_archive_path, archive_path)
+        backend.copy_file(archive_path, from_archive_path)
+
+    print(f'- Archived checkpoint: {len(filenames)} files, elapsed = {time.time() - t0:.2f} s')
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp', required=True, help='Experiment name')
     parser.add_argument('--start_time', type=int, required=True)
+    parser.add_argument('--end_time', type=int, required=True)
     parser.add_argument('--cross_xz', action='store_true', default=False)
     parser.add_argument('--cross_xy', action='store_true', default=False)
     parser.add_argument('--cross_xy_c', action='store_true', default=False)
     parser.add_argument('--dump_c', action='store_true', default=False)
+    parser.add_argument('--checkpoint', action='store_true', default=False)
     parser.add_argument('--convert_all', action='store_true', default=False)
+    parser.add_argument('--iotimeprec', type=int, default=1)
     args = parser.parse_args()
 
     if args.convert_all:
@@ -66,3 +88,8 @@ if __name__ == '__main__':
 
     backend = env['backend']()
     archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend)
+
+    if args.checkpoint:
+        file_time = args.end_time // 10**args.iotimeprec
+        filenames = expected_checkpoint_filenames(file_time)
+        archive_checkpoint(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, filenames, backend)

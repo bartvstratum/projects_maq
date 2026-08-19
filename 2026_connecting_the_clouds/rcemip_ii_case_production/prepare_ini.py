@@ -45,7 +45,6 @@ ini = read_ini(f'{work_dir}/rcemip_ii.ini.base')
 
 ini['time']['starttime'] = args.start_time
 ini['time']['endtime'] = args.end_time
-ini['time']['savetime'] = args.end_time-args.start_time
 
 # Determine wheter to trigger cross/dump output:
 save_coarse_xy = args.start_time >= exp['start_xy_c']

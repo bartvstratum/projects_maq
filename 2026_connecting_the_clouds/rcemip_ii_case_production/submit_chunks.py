@@ -44,7 +44,7 @@ lfs_c = env['lfs_c']
 lfs_s = env['lfs_s']
 
 
-def post_process_flags(start_time):
+def post_process_flags(start_time, end_time):
     """
     Which convert_bin_to_zarr.py conversions are active for a chunk starting
     at `start_time`, based on the per-experiment output start times.
@@ -58,6 +58,8 @@ def post_process_flags(start_time):
         flags.append('--cross_xz')
     if start_time >= exp['start_dump_c']:
         flags.append('--dump_c')
+    if end_time % exp['restart_archive'] == 0:
+        flags.append('--checkpoint')
     return ' '.join(flags)
 
 
@@ -76,10 +78,10 @@ for i in range(n_chunks):
     end_time = min(end_time, total_time)
 
     name = f'{identifier}{i:02d}'
-    post_flags = post_process_flags(start_time)
+    post_flags = post_process_flags(start_time, end_time)
     convert_cmd = f'python {script_dir}/convert_bin_to_zarr.py --exp={args.exp} --start_time={start_time} --end_time={end_time} {post_flags}\n'
-    archive_cmd = f'python {script_dir}/archive.py --exp={args.exp} --start_time={start_time} {post_flags}\n'
-    validate_cmd = f'python {script_dir}/validate_integrity.py --exp={args.exp} --start_time={start_time} {post_flags}\n'
+    archive_cmd = f'python {script_dir}/archive.py --exp={args.exp} --start_time={start_time} --end_time={end_time} {post_flags}\n'
+    validate_cmd = f'python {script_dir}/validate_integrity.py --exp={args.exp} --start_time={start_time} --end_time={end_time} {post_flags}\n'
 
     def create_slurm_script():
         """
