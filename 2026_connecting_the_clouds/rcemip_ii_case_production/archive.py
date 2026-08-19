@@ -48,20 +48,8 @@ if __name__ == '__main__':
     parser.add_argument('--exp', required=True, help='Experiment name')
     parser.add_argument('--start_time', type=int, required=True)
     parser.add_argument('--end_time', type=int, required=True)
-    parser.add_argument('--cross_xz', action='store_true', default=False)
-    parser.add_argument('--cross_xy', action='store_true', default=False)
-    parser.add_argument('--cross_xy_c', action='store_true', default=False)
-    parser.add_argument('--dump_c', action='store_true', default=False)
-    parser.add_argument('--checkpoint', action='store_true', default=False)
-    parser.add_argument('--convert_all', action='store_true', default=False)
     parser.add_argument('--iotimeprec', type=int, default=1)
     args = parser.parse_args()
-
-    if args.convert_all:
-        args.cross_xz = True
-        args.cross_xy = True
-        args.cross_xy_c = True
-        args.dump_c = True
 
     print('Archiving...')
 
@@ -77,19 +65,19 @@ if __name__ == '__main__':
     from_archive_chunk_dir = work_dir / 'from_archive' / chunk_name
 
     kinds = []
-    if args.cross_xy_c:
+    if args.start_time >= exp['start_xy_c']:
         kinds.append('xy_c')
-    if args.cross_xy:
+    if args.start_time >= exp['start_xy']:
         kinds.append('xy')
-    if args.cross_xz:
+    if args.start_time >= exp['start_xz']:
         kinds.append('xz')
-    if args.dump_c:
+    if args.start_time >= exp['start_dump_c']:
         kinds.append('3d_c')
 
     backend = env['backend']()
     archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend)
 
-    if args.checkpoint:
+    if args.end_time % exp['restart_archive'] == 0:
         file_time = args.end_time // 10**args.iotimeprec
         filenames = expected_checkpoint_filenames(file_time)
         archive_checkpoint(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, filenames, backend)

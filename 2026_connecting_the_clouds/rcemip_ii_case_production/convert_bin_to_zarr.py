@@ -171,21 +171,9 @@ if __name__ == '__main__':
     parser.add_argument('--exp', required=True, help='Experiment name')
     parser.add_argument('--start_time', type=int, required=True)
     parser.add_argument('--end_time', type=int, required=True)
-    parser.add_argument('--cross_xz', action='store_true', default=False)
-    parser.add_argument('--cross_xy', action='store_true', default=False)
-    parser.add_argument('--cross_xy_c', action='store_true', default=False)
-    parser.add_argument('--dump_c', action='store_true', default=False)
-    parser.add_argument('--checkpoint', action='store_true', default=False)
-    parser.add_argument('--convert_all', action='store_true', default=False)
     parser.add_argument('--iotimeprec', type=int, default=1)
     parser.add_argument('--sample_time', type=int, default=3600)
     args = parser.parse_args()
-
-    if args.convert_all:
-        args.cross_xz = True
-        args.cross_xy = True
-        args.cross_xy_c = True
-        args.dump_c = True
 
     float_type = np.float32
 
@@ -200,6 +188,12 @@ if __name__ == '__main__':
 
     exp = experiments[args.exp]
     work_dir = os.path.abspath(os.path.join(env['work_dir'], exp['name']))
+
+    do_cross_xy_c = args.start_time >= exp['start_xy_c']
+    do_cross_xy = args.start_time >= exp['start_xy']
+    do_cross_xz = args.start_time >= exp['start_xz']
+    do_dump_c = args.start_time >= exp['start_dump_c']
+    do_checkpoint = args.end_time % exp['restart_archive'] == 0
 
     itot = exp['itot']
     jtot = exp['jtot']
@@ -224,33 +218,33 @@ if __name__ == '__main__':
     stats_name = stage_stats(work_dir, chunk_dir, 'rcemip_ii', args.start_time, args.iotimeprec)
     print(f'- Staging {stats_name}, elapsed = {time.time() - t0:.2f} s')
 
-    if args.cross_xy_c:
+    if do_cross_xy_c:
         t0 = time.time()
         info = convert_cross(
             work_dir, chunk_dir, 'xy_c', vars_xy, grid, file_times, times,
             itot_c, jtot_c, ratio_x, ratio_y, exp['chunks_xy_c'])
         print(f'- Converting xy_c: {info}, elapsed = {time.time() - t0:.2f} s')
 
-    if args.cross_xy:
+    if do_cross_xy:
         t0 = time.time()
         info = convert_cross(
             work_dir, chunk_dir, 'xy', vars_xy, grid, file_times, times,
             itot, jtot, 1, 1, exp['chunks_xy'])
         print(f'- Converting xy: {info}, elapsed = {time.time() - t0:.2f} s')
 
-    if args.cross_xz:
+    if do_cross_xz:
         t0 = time.time()
         info = convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot, ktot, exp['chunks_xz'])
         print(f'- Converting xz: {info}, elapsed = {time.time() - t0:.2f} s')
 
-    if args.dump_c:
+    if do_dump_c:
         t0 = time.time()
         info = convert_dump_c(
             work_dir, chunk_dir, vars_dump_c, grid, file_times, times,
             itot_c, jtot_c, ktot, ratio_x, ratio_y, exp['chunks_dump_c'])
         print(f'- Converting 3d_c: {info}, elapsed = {time.time() - t0:.2f} s')
 
-    if args.checkpoint:
+    if do_checkpoint:
         t0 = time.time()
         file_time = args.end_time // 10**args.iotimeprec
         filenames = stage_checkpoint(work_dir, chunk_dir, file_time)
