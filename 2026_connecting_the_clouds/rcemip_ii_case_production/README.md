@@ -16,3 +16,7 @@
 - `case_setup.py`: defines basic RCEMIP I/II setup.
 
 - `prepare_ini.py`: updates `.ini` file before each time chunk.
+
+## LUMI-O
+- Generate credentials at https://auth.lumidata.eu/
+- `module load lumio` -> run `lumio-conf` and feed the access and secret keys.
