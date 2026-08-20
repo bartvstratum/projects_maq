@@ -4,6 +4,9 @@ from filesystem_backend import Local_backend
 Compute environments.
 Make sure all paths are ABSOLUTE!
 """
+
+lumi_project = 'project_465003023'   # MicroHH3 development call
+
 compute_env = dict(
     eddy = dict(
         project = None,
@@ -33,9 +36,23 @@ compute_env = dict(
         archive_dir = '/scratch/nkbs/archive',
         backend = Local_backend,
         ),
+
+    lumi = dict(
+        project = lumi_project,
+        partition = 'standard',
+        post_partition = 'small',
+        lfs_c = 16,
+        lfs_s = '2M',
+        gpt_path = '/users/stratumv/meteo/models/coefficients_veerman',
+        microhh_path = '/users/stratumv/meteo/models/microhh',
+        microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh',
+        work_dir = f'/scratch/{lumi_project}/rcemip_ii',
+        archive_dir = f'/scratch/{lumi_project}/rcemip_ii_archive',
+        backend = Local_backend,
+        ),
     )
 
-env = compute_env['eddy']
+env = compute_env['lumi']
 
 
 """
