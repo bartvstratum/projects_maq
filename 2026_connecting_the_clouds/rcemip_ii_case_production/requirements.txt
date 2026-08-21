@@ -1,0 +1,6 @@
+numpy
+xarray
+zarr
+dask[distributed]
+microhhpy
+ls2d
