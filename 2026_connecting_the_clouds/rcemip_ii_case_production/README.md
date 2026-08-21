@@ -19,7 +19,14 @@
 
 ## LUMI-O
 - Generate credentials at https://auth.lumidata.eu/
-- `module load lumio` -> run `lumio-conf` and feed the access and secret keys.
+- `module load lumio` -> run `lumio-conf` and feed the access and secret keys. This sets the `~/.config/rclone/rclone.conf` file.
+
+Looking into the archive:
+
+    export RCLONE_CONFIG=$HOME/.config/rclone/rclone.conf
+    rclone tree lumi-465003023-private:rcemip-i             # Full bucket
+    rclone tree lumi-465003023-private:rcemip-i/chunk000    # Sub folder
+    rclone size lumi-465003023-private:rcemip-i             # Size and file count of bucket
 
 ## LUMI environment
 
