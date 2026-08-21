@@ -10,7 +10,7 @@ Compute environments.
 Make sure all paths are ABSOLUTE!
 """
 
-lumi_project = 'project_465003023'   # MicroHH3 development call
+lumi_project = 'project_465003023'   # MicroHH3 development acccess call.
 
 compute_env = dict(
     eddy = dict(
@@ -22,6 +22,7 @@ compute_env = dict(
         gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
         microhh_path = '/home/bart/meteo/models/microhh/',
         #microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
+        env_setup = None,
         #microhh_bin = '/home/bart/meteo/models/microhh/build_spdp_cpumpi/microhh',
         microhh_bin = '/home/bart/meteo/models/microhh/build_dp_cpumpi/microhh',
         work_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/experiments',
@@ -38,6 +39,7 @@ compute_env = dict(
         gpt_path = '/home/nkbs/meteo/models/coefficients_veerman',
         microhh_path = '/home/nkbs/meteo/models/microhh',
         microhh_bin = '/home/nkbs/meteo/models/microhh/build_sp_dpfft_cpumpi/microhh',
+        env_setup = '/home/nkbs/setup_env.sh',
         work_dir = '/scratch/nkbs/',
         archive_dir = '/scratch/nkbs/archive',
         backend = Local_backend,
@@ -52,6 +54,7 @@ compute_env = dict(
         gpt_path = '/users/stratumv/meteo/models/coefficients_veerman',
         microhh_path = '/users/stratumv/meteo/models/microhh',
         microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh',
+        env_setup = '/users/stratumv/setup_rcemip_ii.sh',
         work_dir = f'/scratch/{lumi_project}/rcemip_ii',
         archive_dir = lumi_project.replace('project_', 'lumi-') + '-private:',
         backend = Rclone_backend,
@@ -82,9 +85,12 @@ experiments = dict(
         npy = 16,
         coarse_ratio_x = 8,
         coarse_ratio_y = 8,
-        end_time = 16*24*3600,
-        time_chunk = 4*24*3600,
+        end_time = 2*3600,
+        time_chunk = 1*3600,
         wc_time = '48:00:00',
+        #end_time = 16*24*3600,
+        #time_chunk = 4*24*3600,
+        #wc_time = '48:00:00',
         post_cpus = 6,
         post_wc_time = '04:00:00',
         cleanup = True,
@@ -97,6 +103,8 @@ experiments = dict(
         start_dump_c = 8*24*3600,
         start_xy = 12*24*3600,
         iotimeprec = 1,
+        restart_freq = 3600,
+        restart_archive = 7200,
         ),
 
     # Small domain for development testing.

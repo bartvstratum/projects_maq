@@ -43,6 +43,7 @@ post_cpus = exp['post_cpus']
 post_wc_time = exp['post_wc_time']
 lfs_c = env['lfs_c']
 lfs_s = env['lfs_s']
+env_setup = env['env_setup']
 
 if time_chunk % exp['restart_freq'] != 0:
     raise Exception('Time chunk needs to be a multiple of the restart frequency')
@@ -107,7 +108,7 @@ for i in range(args.start_time // time_chunk, n_chunks):
                 f.write(f'#SBATCH --mem=224G\n')
             f.write(f'#SBATCH --time={wc_time}\n\n')
 
-            f.write(f'source ~/setup_env.sh\n\n')
+            f.write(f'source {env_setup}\n\n')
 
             f.write(f'set -euo pipefail\n\n')
 
@@ -165,7 +166,7 @@ for i in range(args.start_time // time_chunk, n_chunks):
             f.write(f'#SBATCH --cpus-per-task={post_cpus}\n')
             f.write(f'#SBATCH --time={post_wc_time}\n\n')
 
-            f.write(f'source ~/setup_env.sh\n\n')
+            f.write(f'source {env_setup}\n\n')
 
             f.write(f'set -euo pipefail\n\n')
 
