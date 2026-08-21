@@ -1,6 +1,5 @@
 import argparse
 import os
-import shutil
 import time
 
 import dask
@@ -11,7 +10,7 @@ from dask.distributed import Client, LocalCluster
 from zarr.codecs import BloscCodec
 
 from definitions import experiments, env
-from expected_output import vars_xy, vars_xz, vars_dump_c, expected_checkpoint_filenames
+from expected_output import vars_xy, vars_xz, vars_dump_c
 
 
 def bin_path(work_dir, var, kind, locstr, file_time, z=None):
@@ -22,29 +21,6 @@ def bin_path(work_dir, var, kind, locstr, file_time, z=None):
 
 def dump_c_path(work_dir, var, file_time):
     return os.path.join(work_dir, f'{var}_c.{file_time:07d}')
-
-
-def stats_nc_path(work_dir, case_name, file_time):
-    return os.path.join(work_dir, f'{case_name}.default.{file_time:07d}.nc')
-
-
-def stage_stats(work_dir, chunk_dir, case_name, start_time, iotimeprec):
-    file_time = start_time // 10**iotimeprec
-    src = stats_nc_path(work_dir, case_name, file_time)
-    os.makedirs(chunk_dir, exist_ok=True)
-    shutil.copy2(src, os.path.join(chunk_dir, os.path.basename(src)))
-    return os.path.basename(src)
-
-
-def stage_checkpoint(work_dir, chunk_dir, file_time):
-    out_dir = os.path.join(chunk_dir, 'checkpoint')
-    os.makedirs(out_dir, exist_ok=True)
-
-    filenames = expected_checkpoint_filenames(file_time)
-    for filename in filenames:
-        shutil.copy2(os.path.join(work_dir, filename), os.path.join(out_dir, filename))
-
-    return filenames
 
 
 def read_file(path, jtot_c, itot_c):
@@ -193,7 +169,6 @@ if __name__ == '__main__':
     do_cross_xy = args.start_time >= exp['start_xy']
     do_cross_xz = args.start_time >= exp['start_xz']
     do_dump_c = args.start_time >= exp['start_dump_c']
-    do_checkpoint = args.end_time % exp['restart_archive'] == 0
 
     itot = exp['itot']
     jtot = exp['jtot']
@@ -213,10 +188,6 @@ if __name__ == '__main__':
 
     chunk_idx = args.start_time // exp['time_chunk']
     chunk_dir = os.path.join(work_dir, 'to_archive', f'chunk_{chunk_idx:03d}')
-
-    t0 = time.time()
-    stats_name = stage_stats(work_dir, chunk_dir, 'rcemip_ii', args.start_time, args.iotimeprec)
-    print(f'- Staging {stats_name}, elapsed = {time.time() - t0:.2f} s')
 
     if do_cross_xy_c:
         t0 = time.time()
@@ -243,11 +214,5 @@ if __name__ == '__main__':
             work_dir, chunk_dir, vars_dump_c, grid, file_times, times,
             itot_c, jtot_c, ktot, ratio_x, ratio_y, exp['chunks_dump_c'])
         print(f'- Converting 3d_c: {info}, elapsed = {time.time() - t0:.2f} s')
-
-    if do_checkpoint:
-        t0 = time.time()
-        file_time = args.end_time // 10**args.iotimeprec
-        filenames = stage_checkpoint(work_dir, chunk_dir, file_time)
-        print(f'- Staging checkpoint: {len(filenames)} files, elapsed = {time.time() - t0:.2f} s')
 
     client.close()

@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 
-from expected_output import expected_zarr_relpaths
+from expected_output import zarr_relpaths
 from filesystem_backend import Local_backend
 from validate_integrity import (
     check_byte_identical,
@@ -62,7 +62,7 @@ def build_dummy_kind_tree(chunk_dir, kind, content_by_relpath):
 
 def test_byte_identical_pass(tmp_path: Path) -> None:
     kind = 'xz'
-    relpaths = expected_zarr_relpaths()[kind]
+    relpaths = zarr_relpaths()[kind]
     content_by_relpath = {relpath: b'same content' for relpath in relpaths}
 
     to_archive_chunk_dir = tmp_path / 'to_archive'
@@ -77,7 +77,7 @@ def test_byte_identical_pass(tmp_path: Path) -> None:
 
 def test_byte_identical_mismatch(tmp_path: Path) -> None:
     kind = 'xz'
-    relpaths = expected_zarr_relpaths()[kind]
+    relpaths = zarr_relpaths()[kind]
     content_by_relpath = {relpath: b'same content' for relpath in relpaths}
 
     to_archive_chunk_dir = tmp_path / 'to_archive'

@@ -82,13 +82,17 @@ restart_vars_init = [
 restart_extra_init = ['rcemip_ii.ini', 'rcemip_ii_input.nc']
 
 
-def expected_checkpoint_filenames(file_time):
+def checkpoint_filenames(file_time):
     filenames = [f'{var}.{file_time:07d}' for var in restart_vars]
     filenames += [f'{var}.0000000' for var in restart_vars_init] + restart_extra_init
     return filenames
 
 
-def expected_zarr_relpaths():
+def stats_filename(case_name, file_time):
+    return f'{case_name}.default.{file_time:07d}.nc'
+
+
+def zarr_relpaths():
     relpaths = {}
 
     for kind in ('xy_c', 'xy'):

@@ -66,7 +66,7 @@ experiments = dict(
     # RCEMIP-I:
     rcemip = dict(
         name = 'rcemip-i',
-        short_name = 'rcemip',
+        short_name = 'rce1',
         mean_sst = 300,
         delta_sst = 2.5,
         sw_cos_sst = False,

@@ -8,11 +8,11 @@ import xarray as xr
 import zarr
 
 from definitions import experiments, env
-from expected_output import expected_zarr_relpaths, expected_checkpoint_filenames
+from expected_output import zarr_relpaths, checkpoint_filenames, stats_filename
 
 
 def check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, backend):
-    expected = expected_zarr_relpaths()
+    expected = zarr_relpaths()
     mismatches = []
 
     for kind in kinds:
@@ -35,17 +35,17 @@ def check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, ba
     return mismatches
 
 
-def check_checkpoint_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, filenames, backend):
+def check_raw_files_byte_identical(work_dir, from_archive_chunk_dir, subdir, filenames, backend):
     t0 = time.time()
     mismatches = []
 
     for filename in filenames:
-        f1 = to_archive_chunk_dir / 'checkpoint' / filename
-        f2 = from_archive_chunk_dir / 'checkpoint' / filename
+        f1 = work_dir / filename
+        f2 = from_archive_chunk_dir / subdir / filename
         if not filecmp.cmp(f1, f2, shallow=False):
             mismatches.append(str(f2))
 
-    print(f'- Byte-compared checkpoint: {len(filenames)} files, elapsed = {time.time() - t0:.2f} s')
+    print(f'- Byte-compared {subdir}: {len(filenames)} files, elapsed = {time.time() - t0:.2f} s')
     return mismatches
 
 
@@ -66,7 +66,7 @@ def store_non_finite_count(store_path):
 
 
 def check_no_missing_chunks(chunk_dir, kinds):
-    expected = expected_zarr_relpaths()
+    expected = zarr_relpaths()
     stores_with_missing_chunks = []
 
     for kind in kinds:
@@ -86,7 +86,7 @@ def check_no_missing_chunks(chunk_dir, kinds):
 
 
 def check_decode_finite(chunk_dir, kinds):
-    expected = expected_zarr_relpaths()
+    expected = zarr_relpaths()
     stores_with_non_finite = []
 
     for kind in kinds:
@@ -139,10 +139,15 @@ if __name__ == '__main__':
     backend = env['backend']()
     mismatches = check_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, kinds, backend)
 
+    stats_file_time = args.start_time // 10**args.iotimeprec
+    mismatches += check_raw_files_byte_identical(
+        work_dir, from_archive_chunk_dir, 'stats', [stats_filename('rcemip_ii', stats_file_time)], backend)
+
     if args.end_time % exp['restart_archive'] == 0:
         file_time = args.end_time // 10**args.iotimeprec
-        filenames = expected_checkpoint_filenames(file_time)
-        mismatches += check_checkpoint_byte_identical(to_archive_chunk_dir, from_archive_chunk_dir, filenames, backend)
+        filenames = checkpoint_filenames(file_time)
+        mismatches += check_raw_files_byte_identical(
+            work_dir, from_archive_chunk_dir, 'checkpoint', filenames, backend)
 
     if mismatches:
         print(f'Byte-identical check: FAILED, {len(mismatches)} file(s) differ: {mismatches}...')

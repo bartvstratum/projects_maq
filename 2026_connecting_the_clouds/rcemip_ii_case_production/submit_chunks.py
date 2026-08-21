@@ -21,10 +21,10 @@ Experiment settings.
 """
 exp = experiments[args.exp]
 
-# Short name used for identifying runs in SLURM queue. 6 chars + chunk id.
+# Short name used for identifying runs in SLURM queue. 4 chars + _r/_p + chunk id.
 identifier = exp['short_name']
-if len(identifier) > 6:
-    raise Exception('SLURM identifier needs to be short, max 6 chars')
+if len(identifier) > 4:
+    raise Exception('SLURM identifier needs to be short, max 4 chars')
 
 # Local short-cuts.
 total_time = exp['end_time']
@@ -58,7 +58,8 @@ for i in range(n_chunks):
     end_time = (i+1) * time_chunk
     end_time = min(end_time, total_time)
 
-    name = f'{identifier}{i:02d}'
+    run_name = f'{identifier}_r{i:02d}'
+    post_name = f'{identifier}_p{i:02d}'
     convert_cmd = f'python {script_dir}/convert_bin_to_zarr.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n'
     archive_cmd = f'python {script_dir}/archive.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n'
     validate_cmd = f'python {script_dir}/validate_integrity.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n'
@@ -75,9 +76,9 @@ for i in range(n_chunks):
             f.write(f'#!/bin/bash\n\n')
             if account is not None:
                 f.write(f'#SBATCH --account={account}\n')
-            f.write(f'#SBATCH --job-name={name}\n')
-            f.write(f'#SBATCH --output={work_dir}/{name}-%j.out\n')
-            f.write(f'#SBATCH --error={work_dir}/{name}-%j.err\n')
+            f.write(f'#SBATCH --job-name={run_name}\n')
+            f.write(f'#SBATCH --output={work_dir}/{run_name}.out\n')
+            f.write(f'#SBATCH --error={work_dir}/{run_name}.err\n')
             f.write(f'#SBATCH --mail-type=FAIL\n')
             f.write(f'#SBATCH --mail-user=lumi@cloudysky.cc\n')
             f.write(f'#SBATCH --partition={partition}\n')
@@ -106,7 +107,7 @@ for i in range(n_chunks):
             if lfs_c is not None and lfs_s is not None:
                 f.write(f'lfs setstripe -c {lfs_c} -S {lfs_s} {work_dir}\n\n')
 
-            mhh_log = f'{work_dir}/{name}-microhh-$SLURM_JOB_ID.out'
+            mhh_log = f'{work_dir}/{run_name}.mhh'
             if start_time == 0:
                 f.write(f'echo "Starting microhh init..."\n')
                 f.write(f'srun ./microhh init rcemip_ii &>> {mhh_log}\n')
@@ -126,15 +127,13 @@ for i in range(n_chunks):
         result = subprocess.run(sbatch_cmd, capture_output=True, text=True, check=True)
         previous_job_id = result.stdout.strip()
 
-        print(f'Submitted chunk {i} ({name}) as job {previous_job_id}')
+        print(f'Submitted chunk {i} ({run_name}) as job {previous_job_id}')
 
         """
         Create and submit post-processing SLURM script, daisy-chained onto the
         run job (`afterok`) that produced its input. Always run, even without
         active cross/dump flags, since the stats file is archived every chunk.
         """
-        post_name = f'{identifier[:-1]}p{i:02d}'
-
         post_script = f'{work_dir}/post_{i}.slurm'
         with open(post_script, 'w') as f:
 
@@ -142,8 +141,8 @@ for i in range(n_chunks):
             if account is not None:
                 f.write(f'#SBATCH --account={account}\n')
             f.write(f'#SBATCH --job-name={post_name}\n')
-            f.write(f'#SBATCH --output={work_dir}/{post_name}-%j.out\n')
-            f.write(f'#SBATCH --error={work_dir}/{post_name}-%j.err\n')
+            f.write(f'#SBATCH --output={work_dir}/{post_name}.out\n')
+            f.write(f'#SBATCH --error={work_dir}/{post_name}.err\n')
             f.write(f'#SBATCH --mail-type=FAIL\n')
             f.write(f'#SBATCH --mail-user=lumi@cloudysky.cc\n')
             f.write(f'#SBATCH --partition={post_partition}\n')
@@ -181,7 +180,7 @@ for i in range(n_chunks):
             f.write(f'set -euo pipefail\n\n')
             f.write(f'cd {work_dir}\n\n')
             f.write(f'python {script_dir}/prepare_ini.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n\n')
-            mhh_log = f'{name}-microhh.out'
+            mhh_log = f'{run_name}.mhh'
             if start_time == 0:
                 f.write(f'echo "Starting microhh init..."\n')
                 f.write(f'{mhh_cmd} init rcemip_ii &>> {mhh_log}\n')
