@@ -28,8 +28,6 @@ def archive_raw_files(work_dir, archive_chunk_dir, from_archive_chunk_dir, subdi
 
     archive_dir = archive_chunk_dir / subdir
     from_archive_dir = from_archive_chunk_dir / subdir
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    from_archive_dir.mkdir(parents=True, exist_ok=True)
 
     for filename in filenames:
         src_path = work_dir / filename
@@ -55,7 +53,8 @@ if __name__ == '__main__':
 
     exp = experiments[args.exp]
     work_dir = Path(env['work_dir']) / exp['name']
-    archive_dir = Path(env['archive_dir']) / exp['name']
+    archive_base = env['archive_dir']
+    archive_dir = Path(archive_base + exp['name'] if archive_base.endswith(':') else archive_base + '/' + exp['name'])
 
     chunk_idx = args.start_time // exp['time_chunk']
     chunk_name = f'chunk_{chunk_idx:03d}'

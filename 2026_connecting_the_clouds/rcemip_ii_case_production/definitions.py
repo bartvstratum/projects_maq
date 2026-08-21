@@ -1,4 +1,4 @@
-from filesystem_backend import Local_backend
+from filesystem_backend import Local_backend, Rclone_backend
 
 """
 Compute environments.
@@ -47,8 +47,8 @@ compute_env = dict(
         microhh_path = '/users/stratumv/meteo/models/microhh',
         microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh',
         work_dir = f'/scratch/{lumi_project}/rcemip_ii',
-        archive_dir = f'/scratch/{lumi_project}/rcemip_ii_archive',
-        backend = Local_backend,
+        archive_dir = lumi_project.replace('project_', 'lumi-') + '-private:',
+        backend = Rclone_backend,
         ),
     )
 
