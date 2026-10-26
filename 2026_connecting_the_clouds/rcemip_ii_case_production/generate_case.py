@@ -27,7 +27,7 @@ import numpy as np
 import ls2d
 
 from case_setup import rcemip_ii_input
-from definitions import experiments, env
+from definitions import experiments, env, float_type
 
 """
 Parse command line arguments.
@@ -40,8 +40,6 @@ args = parser.parse_args()
 """
 Global settings, same for all RCEMIP-II cases.
 """
-float_type = np.float32
-
 # G-point sets from Veerman (2024).
 coef_sw = 'rrtmgp-gas-sw-g049-cf2.nc'
 coef_lw = 'rrtmgp-gas-lw-g056-cf2.nc'
@@ -82,6 +80,7 @@ rcemip_ii_input(
         d_sst = exp['delta_sst'],
         ps = exp['ps'],
         restart_freq = exp['restart_freq'],
+        iotimeprec = exp['iotimeprec'],
         coef_sw = coef_sw,
         coef_lw = coef_lw,
         work_dir = work_dir,

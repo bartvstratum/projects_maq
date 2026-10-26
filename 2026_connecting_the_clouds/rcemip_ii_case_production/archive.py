@@ -48,7 +48,6 @@ if __name__ == '__main__':
     parser.add_argument('--exp', required=True, help='Experiment name')
     parser.add_argument('--start_time', type=int, required=True)
     parser.add_argument('--end_time', type=int, required=True)
-    parser.add_argument('--iotimeprec', type=int, default=1)
     args = parser.parse_args()
 
     print('Archiving...')
@@ -77,13 +76,13 @@ if __name__ == '__main__':
     backend = env['backend']()
     archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend)
 
-    stats_file_time = args.start_time // 10**args.iotimeprec
+    stats_file_time = args.start_time // 10**exp['iotimeprec']
     archive_raw_files(
         work_dir, archive_chunk_dir, from_archive_chunk_dir,
         'stats', [stats_filename('rcemip_ii', stats_file_time)], backend)
 
     if args.end_time % exp['restart_archive'] == 0:
-        file_time = args.end_time // 10**args.iotimeprec
+        file_time = args.end_time // 10**exp['iotimeprec']
         filenames = checkpoint_filenames(file_time)
         archive_raw_files(
             work_dir, archive_chunk_dir, from_archive_chunk_dir,

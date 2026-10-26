@@ -9,7 +9,7 @@ import xarray as xr
 from dask.distributed import Client, LocalCluster
 from zarr.codecs import BloscCodec
 
-from definitions import experiments, env
+from definitions import experiments, env, float_type
 from expected_output import vars_xy, vars_xz, vars_dump_c
 
 
@@ -147,22 +147,19 @@ if __name__ == '__main__':
     parser.add_argument('--exp', required=True, help='Experiment name')
     parser.add_argument('--start_time', type=int, required=True)
     parser.add_argument('--end_time', type=int, required=True)
-    parser.add_argument('--iotimeprec', type=int, default=1)
     parser.add_argument('--sample_time', type=int, default=3600)
     args = parser.parse_args()
-
-    float_type = np.float32
 
     n_workers = 6
     threads_per_worker = 1
 
     compressor = BloscCodec(cname='lz4', clevel=1, shuffle='shuffle')
 
+    exp = experiments[args.exp]
+
     first_time = args.start_time if args.start_time == 0 else args.start_time + args.sample_time
     times = np.arange(first_time, args.end_time + 1, args.sample_time)
-    file_times = times // 10**args.iotimeprec
-
-    exp = experiments[args.exp]
+    file_times = times // 10**exp['iotimeprec']
     work_dir = os.path.abspath(os.path.join(env['work_dir'], exp['name']))
 
     do_cross_xy_c = args.start_time >= exp['start_xy_c']

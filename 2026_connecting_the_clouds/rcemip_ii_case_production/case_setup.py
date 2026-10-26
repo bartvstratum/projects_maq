@@ -103,6 +103,7 @@ def rcemip_ii_input(
         d_sst,
         ps,
         restart_freq,
+        iotimeprec,
         coef_sw,
         coef_lw,
         work_dir,
@@ -149,6 +150,7 @@ def rcemip_ii_input(
     ini['thermo']['pbot'] = ps
 
     ini['time']['savetime'] = restart_freq
+    ini['time']['iotimeprec'] = iotimeprec
 
     # For `!sw_cos_sst`:
     exn = exner(ps)

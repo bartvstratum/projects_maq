@@ -14,7 +14,6 @@
 - `convert_bin_to_zarr.py`: converts all MicroHH binaries to Zarr archives.
 - `archive.py`: archives the Zarr archives and other output.
 - `case_setup.py`: defines basic RCEMIP I/II setup.
-
 - `prepare_ini.py`: updates `.ini` file before each time chunk.
 
 ## LUMI-O
