@@ -1,7 +1,7 @@
 [advec]
 swadvec=2i5
 cflmax=1.2
-#fluxlimit_list=qt,qr,qs,qg
+fluxlimit_list=qt,qr,qs,qg
 
 [boundary]
 swboundary=surface
