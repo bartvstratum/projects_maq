@@ -53,7 +53,9 @@ class Local_backend(Backend):
         shutil.rmtree(root)
 
     def copy_file(self, src: Path | str, dst: Path | str) -> None:
-        shutil.copy2(Path(src), Path(dst))
+        dst = Path(dst)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(Path(src), dst)
 
     def remove_file(self, path: Path | str) -> None:
         file = Path(path)
