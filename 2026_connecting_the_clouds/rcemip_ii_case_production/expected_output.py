@@ -80,7 +80,7 @@ restart_vars_init = [
     'fftwplan', 'grid', 'rhoref', 'qt_bot_in', 'thl_bot_in',
 ]
 
-restart_extra_init = ['rcemip_ii.ini', 'rcemip_ii_input.nc']
+restart_extra_init = ['rcemip_ii_input.nc']
 
 
 def checkpoint_filenames(file_time):
