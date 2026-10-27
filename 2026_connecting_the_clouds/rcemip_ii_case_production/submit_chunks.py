@@ -52,6 +52,7 @@ n_chunks = int(np.ceil(total_time / time_chunk))
 print(f'Dividing {total_time} into {n_chunks} runs of {time_chunk}...')
 
 previous_job_id = None
+previous_post_job_id = None
 
 for i in range(n_chunks):
     start_time = i * time_chunk
@@ -63,12 +64,13 @@ for i in range(n_chunks):
     convert_cmd = f'python {script_dir}/convert_bin_to_zarr.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n'
     archive_cmd = f'python {script_dir}/archive.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n'
     validate_cmd = f'python {script_dir}/validate_integrity.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n'
+    cleanup_cmd = f'python {script_dir}/cleanup.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n'
 
     def create_slurm_script():
         """
         Create and submit SLURM script.
         """
-        global previous_job_id
+        global previous_job_id, previous_post_job_id
 
         slurm_script = f'{work_dir}/run_{i}.slurm'
         with open(slurm_script, 'w') as f:
@@ -159,12 +161,17 @@ for i in range(n_chunks):
             f.write(convert_cmd)
             f.write(archive_cmd)
             f.write(validate_cmd)
+            f.write(cleanup_cmd)
 
-        post_sbatch_cmd = ['sbatch', '--parsable', f'--dependency=afterok:{previous_job_id}', post_script]
+        post_dependency = f'afterok:{previous_job_id}'
+        if previous_post_job_id is not None:
+            post_dependency += f':{previous_post_job_id}'
+
+        post_sbatch_cmd = ['sbatch', '--parsable', f'--dependency={post_dependency}', post_script]
         post_result = subprocess.run(post_sbatch_cmd, capture_output=True, text=True, check=True)
-        post_job_id = post_result.stdout.strip()
+        previous_post_job_id = post_result.stdout.strip()
 
-        print(f'Submitted post-processing for chunk {i} as job {post_job_id}')
+        print(f'Submitted post-processing for chunk {i} as job {previous_post_job_id}')
 
 
     def create_bash_script():
@@ -190,6 +197,7 @@ for i in range(n_chunks):
             f.write(convert_cmd)
             f.write(archive_cmd)
             f.write(validate_cmd)
+            f.write(cleanup_cmd)
 
         os.chmod(bash_script, 0o755)
 

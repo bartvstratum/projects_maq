@@ -114,7 +114,7 @@ experiments = dict(
         npy = 4,
         coarse_ratio_x = 4,
         coarse_ratio_y = 4,
-        end_time = 2*3600,
+        end_time = 3*3600,
         time_chunk = 1*3600,
         wc_time = '24:00:00',
         post_cpus = 6,
@@ -129,6 +129,6 @@ experiments = dict(
         start_xy = 7200,
         restart_freq = 3600,
         restart_archive = 7200,
-        iotimeprec = 0,
+        iotimeprec = 1,
         ),
     )
