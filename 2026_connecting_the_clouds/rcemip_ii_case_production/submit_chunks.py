@@ -14,6 +14,7 @@ Parse cmd line arguments.
 """
 parser = argparse.ArgumentParser()
 parser.add_argument('--exp', required=True, help='Experiment name')
+parser.add_argument('--start_time', type=int, default=0)
 args = parser.parse_args()
 
 """
@@ -47,6 +48,12 @@ if time_chunk % exp['restart_freq'] != 0:
     raise Exception('Time chunk needs to be a multiple of the restart frequency')
 if exp['restart_archive'] % time_chunk != 0:
     raise Exception('Restart archive frequency needs to be a multiple of the time chunk')
+if args.start_time % time_chunk != 0:
+    raise Exception('Start time needs to be a multiple of the time chunk')
+
+restart_file = f'{work_dir}/time.{args.start_time // 10**exp["iotimeprec"]:07d}'
+if args.start_time > 0 and not os.path.exists(restart_file):
+    raise Exception(f'Restart file {restart_file} does not exist')
 
 
 """
@@ -59,7 +66,7 @@ print(f'Dividing {total_time} into {n_chunks} runs of {time_chunk}...')
 previous_job_id = None
 previous_post_job_id = None
 
-for i in range(n_chunks):
+for i in range(args.start_time // time_chunk, n_chunks):
     start_time = i * time_chunk
     end_time = (i+1) * time_chunk
     end_time = min(end_time, total_time)
