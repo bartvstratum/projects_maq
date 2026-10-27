@@ -43,6 +43,11 @@ post_wc_time = exp['post_wc_time']
 lfs_c = env['lfs_c']
 lfs_s = env['lfs_s']
 
+if time_chunk % exp['restart_freq'] != 0:
+    raise Exception('Time chunk needs to be a multiple of the restart frequency')
+if exp['restart_archive'] % time_chunk != 0:
+    raise Exception('Restart archive frequency needs to be a multiple of the time chunk')
+
 
 """
 Spawn simulations chunks, daisy-chained through their SLURM IDs.

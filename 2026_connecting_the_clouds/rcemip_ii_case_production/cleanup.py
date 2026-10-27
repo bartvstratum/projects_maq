@@ -80,6 +80,6 @@ if __name__ == '__main__':
     stats_file_time = args.start_time // 10**exp['iotimeprec']
     remove_files(work_dir, [stats_filename('rcemip_ii', stats_file_time)], 'stats')
 
-    if args.end_time % exp['restart_archive'] == 0:
+    if args.end_time % exp['restart_archive'] == 0 or args.end_time == exp['end_time']:
         restart_files = find_files(work_dir, restart_pattern, 0, last_file_time - 1)
         remove_files(work_dir, restart_files, 'checkpoint')

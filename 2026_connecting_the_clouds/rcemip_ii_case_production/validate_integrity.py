@@ -142,7 +142,7 @@ if __name__ == '__main__':
     mismatches += check_raw_files_byte_identical(
         work_dir, from_archive_chunk_dir, 'stats', [stats_filename('rcemip_ii', stats_file_time)], backend)
 
-    if args.end_time % exp['restart_archive'] == 0:
+    if args.end_time % exp['restart_archive'] == 0 or args.end_time == exp['end_time']:
         file_time = args.end_time // 10**exp['iotimeprec']
         filenames = checkpoint_filenames(file_time)
         mismatches += check_raw_files_byte_identical(
