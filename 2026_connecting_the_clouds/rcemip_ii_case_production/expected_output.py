@@ -93,6 +93,16 @@ def stats_filename(case_name, file_time):
     return f'{case_name}.default.{file_time:07d}.nc'
 
 
+def run_log_filenames(short_name, chunk_idx):
+    run_name = f'{short_name}_r{chunk_idx:02d}'
+    return [f'{run_name}.stdout', f'{run_name}.stderr', f'{run_name}.out']
+
+
+def post_log_filenames(short_name, chunk_idx):
+    post_name = f'{short_name}_p{chunk_idx:02d}'
+    return [f'{post_name}.stdout', f'{post_name}.stderr']
+
+
 def zarr_relpaths():
     relpaths = {}
 

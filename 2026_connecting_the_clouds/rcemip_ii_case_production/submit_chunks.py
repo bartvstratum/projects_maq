@@ -84,8 +84,8 @@ for i in range(n_chunks):
             if account is not None:
                 f.write(f'#SBATCH --account={account}\n')
             f.write(f'#SBATCH --job-name={run_name}\n')
-            f.write(f'#SBATCH --output={work_dir}/{run_name}.out\n')
-            f.write(f'#SBATCH --error={work_dir}/{run_name}.err\n')
+            f.write(f'#SBATCH --output={work_dir}/{run_name}.stdout\n')
+            f.write(f'#SBATCH --error={work_dir}/{run_name}.stderr\n')
             f.write(f'#SBATCH --mail-type=FAIL\n')
             f.write(f'#SBATCH --mail-user=lumi@cloudysky.cc\n')
             f.write(f'#SBATCH --partition={partition}\n')
@@ -114,12 +114,13 @@ for i in range(n_chunks):
             if lfs_c is not None and lfs_s is not None:
                 f.write(f'lfs setstripe -c {lfs_c} -S {lfs_s} {work_dir}\n\n')
 
-            mhh_log = f'{work_dir}/{run_name}.mhh'
             if start_time == 0:
                 f.write(f'echo "Starting microhh init..."\n')
-                f.write(f'srun ./microhh init rcemip_ii &>> {mhh_log}\n')
+                f.write(f'srun ./microhh init rcemip_ii\n')
             f.write(f'echo "Starting microhh run..."\n')
-            f.write(f'srun ./microhh run rcemip_ii &>> {mhh_log}\n\n')
+            f.write(f'srun ./microhh run rcemip_ii\n\n')
+
+            f.write(f'mv rcemip_ii.out {run_name}.out\n\n')
 
             # TODO: archiving.
 
@@ -148,8 +149,8 @@ for i in range(n_chunks):
             if account is not None:
                 f.write(f'#SBATCH --account={account}\n')
             f.write(f'#SBATCH --job-name={post_name}\n')
-            f.write(f'#SBATCH --output={work_dir}/{post_name}.out\n')
-            f.write(f'#SBATCH --error={work_dir}/{post_name}.err\n')
+            f.write(f'#SBATCH --output={work_dir}/{post_name}.stdout\n')
+            f.write(f'#SBATCH --error={work_dir}/{post_name}.stderr\n')
             f.write(f'#SBATCH --mail-type=FAIL\n')
             f.write(f'#SBATCH --mail-user=lumi@cloudysky.cc\n')
             f.write(f'#SBATCH --partition={post_partition}\n')
@@ -192,12 +193,13 @@ for i in range(n_chunks):
             f.write(f'set -euo pipefail\n\n')
             f.write(f'cd {work_dir}\n\n')
             f.write(f'python {script_dir}/prepare_ini.py --exp={args.exp} --start_time={start_time} --end_time={end_time}\n\n')
-            mhh_log = f'{run_name}.mhh'
             if start_time == 0:
                 f.write(f'echo "Starting microhh init..."\n')
-                f.write(f'{mhh_cmd} init rcemip_ii &>> {mhh_log}\n')
+                f.write(f'{mhh_cmd} init rcemip_ii >> {run_name}.stdout 2>> {run_name}.stderr\n')
             f.write(f'echo "Starting microhh run..."\n')
-            f.write(f'{mhh_cmd} run rcemip_ii &>> {mhh_log}\n\n')
+            f.write(f'{mhh_cmd} run rcemip_ii >> {run_name}.stdout 2>> {run_name}.stderr\n\n')
+
+            f.write(f'mv rcemip_ii.out {run_name}.out\n\n')
 
             f.write(convert_cmd)
             f.write(archive_cmd)

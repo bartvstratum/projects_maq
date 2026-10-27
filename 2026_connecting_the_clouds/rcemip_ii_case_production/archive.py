@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 
 from definitions import experiments, env
-from expected_output import zarr_relpaths, checkpoint_filenames, stats_filename
+from expected_output import zarr_relpaths, checkpoint_filenames, stats_filename, run_log_filenames, post_log_filenames
 
 
 def archive_chunk(to_archive_chunk_dir, archive_chunk_dir, from_archive_chunk_dir, kinds, backend):
@@ -79,6 +79,16 @@ if __name__ == '__main__':
     archive_raw_files(
         work_dir, archive_chunk_dir, from_archive_chunk_dir,
         'stats', [stats_filename('rcemip_ii', stats_file_time)], backend)
+
+    archive_raw_files(
+        work_dir, archive_chunk_dir, from_archive_chunk_dir,
+        'logs', run_log_filenames(exp['short_name'], chunk_idx), backend)
+
+    if env['partition'] is not None and chunk_idx > 0:
+        prev_chunk_name = f'chunk_{chunk_idx-1:03d}'
+        archive_raw_files(
+            work_dir, archive_dir / prev_chunk_name, work_dir / 'from_archive' / prev_chunk_name,
+            'logs', post_log_filenames(exp['short_name'], chunk_idx-1), backend)
 
     if args.end_time % exp['restart_archive'] == 0 or args.end_time == exp['end_time']:
         file_time = args.end_time // 10**exp['iotimeprec']

@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 from definitions import experiments, env
-from expected_output import vars_dump_c, restart_vars, stats_filename
+from expected_output import vars_dump_c, restart_vars, stats_filename, run_log_filenames, post_log_filenames
 
 
 cross_pattern = re.compile(r'[^.]+\.(xy|xy_c|xz|yz)\.\d{3}(\.\d{5})?\.(?P<time>\d{7,})')
@@ -79,6 +79,13 @@ if __name__ == '__main__':
 
     stats_file_time = args.start_time // 10**exp['iotimeprec']
     remove_files(work_dir, [stats_filename('rcemip_ii', stats_file_time)], 'stats')
+
+    remove_files(work_dir, run_log_filenames(exp['short_name'], chunk_idx), 'run logs')
+
+    if env['partition'] is not None and chunk_idx > 0:
+        prev_chunk_name = f'chunk_{chunk_idx-1:03d}'
+        remove_chunk_dir(work_dir, 'from_archive', prev_chunk_name)
+        remove_files(work_dir, post_log_filenames(exp['short_name'], chunk_idx-1), 'post logs')
 
     if args.end_time % exp['restart_archive'] == 0 or args.end_time == exp['end_time']:
         restart_files = find_files(work_dir, restart_pattern, 0, last_file_time - 1)
