@@ -174,7 +174,8 @@ for i in range(args.start_time // time_chunk, n_chunks):
             f.write(convert_cmd)
             f.write(archive_cmd)
             f.write(validate_cmd)
-            f.write(cleanup_cmd)
+            if exp['cleanup']:
+                f.write(cleanup_cmd)
 
         post_dependency = f'afterok:{previous_job_id}'
         if previous_post_job_id is not None:
@@ -211,7 +212,8 @@ for i in range(args.start_time // time_chunk, n_chunks):
             f.write(convert_cmd)
             f.write(archive_cmd)
             f.write(validate_cmd)
-            f.write(cleanup_cmd)
+            if exp['cleanup']:
+                f.write(cleanup_cmd)
 
         os.chmod(bash_script, 0o755)
 

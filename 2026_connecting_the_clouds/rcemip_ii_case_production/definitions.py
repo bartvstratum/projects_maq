@@ -2,8 +2,8 @@ import numpy as np
 
 from filesystem_backend import Local_backend, Rclone_backend
 
-#float_type = np.float64
-float_type = np.float32
+float_type = np.float64
+#float_type = np.float32
 
 """
 Compute environments.
@@ -22,8 +22,8 @@ compute_env = dict(
         gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
         microhh_path = '/home/bart/meteo/models/microhh/',
         #microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
-        microhh_bin = '/home/bart/meteo/models/microhh/build_spdp_cpumpi/microhh',
-        #microhh_bin = '/home/bart/meteo/models/microhh/build_dp_cpumpi/microhh',
+        #microhh_bin = '/home/bart/meteo/models/microhh/build_spdp_cpumpi/microhh',
+        microhh_bin = '/home/bart/meteo/models/microhh/build_dp_cpumpi/microhh',
         work_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/experiments',
         archive_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/archive',
         backend = Local_backend,
@@ -87,6 +87,7 @@ experiments = dict(
         wc_time = '48:00:00',
         post_cpus = 6,
         post_wc_time = '04:00:00',
+        cleanup = True,
         chunks_xy_c = (10_000, 32, 32),
         chunks_xy = (10_000, 256, 256),
         chunks_xz = (10_000, 128, 256),
@@ -114,21 +115,22 @@ experiments = dict(
         npy = 4,
         coarse_ratio_x = 4,
         coarse_ratio_y = 4,
-        end_time = 3*3600,
-        time_chunk = 1*3600,
+        end_time = 48*3600,
+        time_chunk = 24*3600,
         wc_time = '24:00:00',
         post_cpus = 6,
         post_wc_time = '01:00:00',
+        cleanup = False,
         chunks_xy_c = (10_000, 8, 32),
         chunks_xy = (10_000, 32, 128),
         chunks_xz = (10_000, 128, 128),
         chunks_dump_c = (10_000, 128, 8, 32),
         start_xy_c = 0,
         start_xz = 0,
-        start_dump_c = 3600,
-        start_xy = 7200,
-        restart_freq = 3600,
-        restart_archive = 7200,
-        iotimeprec = 1,
+        start_dump_c = 0,
+        start_xy = 0,
+        restart_freq = 12*3600,
+        restart_archive = 24*3600,
+        iotimeprec = 0,
         ),
     )
