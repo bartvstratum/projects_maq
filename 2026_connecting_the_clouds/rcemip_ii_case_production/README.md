@@ -50,3 +50,9 @@ To setup the virtual environment:
     python -m venv ~/venvs
     source ~/venvs/rcemip_ii/bin/activate
     pip install -r requirements.txt
+
+## Compilation
+
+Configure MicroHH build with:
+
+    cmake -DSYST=lumi -DUSESP=1 -DUSEDPFFT=1 -DUSEMPI=1 ..
