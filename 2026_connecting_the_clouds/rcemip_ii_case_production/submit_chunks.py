@@ -15,6 +15,7 @@ Parse cmd line arguments.
 parser = argparse.ArgumentParser()
 parser.add_argument('--exp', required=True, help='Experiment name')
 parser.add_argument('--start_time', type=int, default=0)
+parser.add_argument('--no_post', action='store_true', help='Only run simulations, skip post-processing (convert/archive/validate/cleanup)')
 args = parser.parse_args()
 
 """
@@ -145,6 +146,9 @@ for i in range(args.start_time // time_chunk, n_chunks):
 
         print(f'Submitted chunk {i} ({run_name}) as job {previous_job_id}')
 
+        if args.no_post:
+            return
+
         """
         Create and submit post-processing SLURM script, daisy-chained onto the
         run job (`afterok`) that produced its input. Always run, even without
@@ -210,11 +214,12 @@ for i in range(args.start_time // time_chunk, n_chunks):
 
             f.write(f'mv rcemip_ii.out {run_name}.out\n\n')
 
-            f.write(convert_cmd)
-            f.write(archive_cmd)
-            f.write(validate_cmd)
-            if exp['cleanup']:
-                f.write(cleanup_cmd)
+            if not args.no_post:
+                f.write(convert_cmd)
+                f.write(archive_cmd)
+                f.write(validate_cmd)
+                if exp['cleanup']:
+                    f.write(cleanup_cmd)
 
         os.chmod(bash_script, 0o755)
 

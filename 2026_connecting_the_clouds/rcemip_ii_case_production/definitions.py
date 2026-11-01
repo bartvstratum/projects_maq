@@ -2,15 +2,16 @@ import numpy as np
 
 from filesystem_backend import Local_backend, Rclone_backend
 
-float_type = np.float64
-#float_type = np.float32
+#float_type = np.float64
+float_type = np.float32
 
 """
 Compute environments.
 Make sure all paths are ABSOLUTE!
 """
 
-lumi_project = 'project_465003023'   # MicroHH3 development acccess call.
+#lumi_project = 'project_465003023'   # MicroHH3 development acccess call.
+lumi_project = 'project_465003624'   # Extreme-scale access.
 
 compute_env = dict(
     eddy = dict(
@@ -55,13 +56,13 @@ compute_env = dict(
         microhh_path = '/users/stratumv/meteo/models/microhh',
         microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh',
         env_setup = '/users/stratumv/setup_rcemip_ii.sh',
-        work_dir = f'/scratch/{lumi_project}/rcemip_ii',
+        work_dir = f'/scratch/{lumi_project}/rcemip_ii_nsw_overflow',
         archive_dir = lumi_project.replace('project_', 'lumi-') + '-private:',
         backend = Rclone_backend,
         ),
     )
 
-env = compute_env['eddy']
+env = compute_env['lumi']
 
 
 """
@@ -85,26 +86,58 @@ experiments = dict(
         npy = 16,
         coarse_ratio_x = 8,
         coarse_ratio_y = 8,
-        end_time = 2*3600,
-        time_chunk = 1*3600,
+        end_time = 4*24*3600,
+        time_chunk = 4*24*3600,
         wc_time = '48:00:00',
-        #end_time = 16*24*3600,
-        #time_chunk = 4*24*3600,
-        #wc_time = '48:00:00',
         post_cpus = 6,
         post_wc_time = '04:00:00',
-        cleanup = True,
+        cleanup = False,
         chunks_xy_c = (10_000, 32, 32),
         chunks_xy = (10_000, 256, 256),
         chunks_xz = (10_000, 128, 256),
         chunks_dump_c = (10_000, 128, 32, 32),
         start_xy_c = 0,
         start_xz = 0,
-        start_dump_c = 8*24*3600,
-        start_xy = 12*24*3600,
+        start_dump_c = 0*24*3600,
+        start_xy = 0*24*3600,
+        restart_freq = 1*24*3600,
+        restart_archive = 4*24*3600,
         iotimeprec = 1,
-        restart_freq = 3600,
-        restart_archive = 7200,
+        ),
+
+    # Mirjam's quick test setup.
+    rcemip_c = dict(
+        name = 'new',
+        short_name = 'new',
+        mean_sst = 300,
+        delta_sst = -1,
+        sw_cos_sst = False,
+        ps = 101480,
+        xsize = 128*1000,
+        ysize = 128*1000,
+        itot = 128,
+        jtot = 128,
+        npx = 8,
+        npy = 16,
+        coarse_ratio_x = 4,
+        coarse_ratio_y = 4,
+        end_time = 10*24*3600,
+        time_chunk = 10*24*3600,
+        wc_time = '12:00:00',
+        post_cpus = 6,
+        post_wc_time = '01:00:00',
+        cleanup = False,
+        chunks_xy_c = (10_000, 8, 32),
+        chunks_xy = (10_000, 32, 128),
+        chunks_xz = (10_000, 128, 128),
+        chunks_dump_c = (10_000, 128, 8, 32),
+        start_xy_c = 0,
+        start_xz = 0,
+        start_dump_c = 0,
+        start_xy = 0,
+        restart_freq = 24*3600,
+        restart_archive = 10*24*3600,
+        iotimeprec = 0,
         ),
 
     # Small domain for development testing.
@@ -115,15 +148,15 @@ experiments = dict(
         delta_sst = 1.25,
         sw_cos_sst = True,
         ps = 101480,
-        xsize = 64*400,
-        ysize = 32*400,
-        itot = 64,
-        jtot = 32,
-        npx = 2,
-        npy = 4,
-        coarse_ratio_x = 4,
-        coarse_ratio_y = 4,
-        end_time = 48*3600,
+        xsize = 128*400,
+        ysize = 64*400,
+        itot = 128,
+        jtot = 64,
+        npx = 16,
+        npy = 8,
+        coarse_ratio_x = 8,
+        coarse_ratio_y = 8,
+        end_time = 2*24*3600,
         time_chunk = 24*3600,
         wc_time = '24:00:00',
         post_cpus = 6,
