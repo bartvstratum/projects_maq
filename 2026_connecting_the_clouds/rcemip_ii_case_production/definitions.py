@@ -56,7 +56,7 @@ compute_env = dict(
         microhh_path = '/users/stratumv/meteo/models/microhh',
         microhh_bin = '/users/stratumv/meteo/models/microhh/build_spdp_cpumpi/microhh',
         env_setup = '/users/stratumv/setup_rcemip_ii.sh',
-        work_dir = f'/scratch/{lumi_project}/rcemip_ii_nsw_overflow',
+        work_dir = f'/scratch/{lumi_project}/rcemip_ii',
         archive_dir = lumi_project.replace('project_', 'lumi-') + '-private:',
         backend = Rclone_backend,
         ),
@@ -68,7 +68,114 @@ env = compute_env['lumi']
 """
 Experiment specific settings.
 """
+exp_1 = dict(name = 'mw295dt2p5',  short_name = 'e1', mean_sst = 295, delta_sst = 2.5 )
+exp_2 = dict(name = 'mw300dt2p5',  short_name = 'e2', mean_sst = 300, delta_sst = 2.5 )
+exp_3 = dict(name = 'mw300dt1p25', short_name = 'e3', mean_sst = 300, delta_sst = 1.25)
+
+# Note: wall clock limit LUMI = 2 days.
+# 800 m = ~4.9 SDPD = 9.8 d
+# 400 m = ~3.6 SDPD = 7.2 d
+# 200 m = ~1.4 SDPD = 2.8 d
+
+grid_800 = dict(
+    res = 800,
+    itot = 7680,
+    jtot = 512, 
+    npx = 128,
+    npy = 16,
+    coarse_ratio_x = 4,
+    coarse_ratio_y = 4,
+    time_chunk = 5*24*3600,
+    chunks_xy_c = dict(time=121, y=128, x=960),         # 59 MB/file, 2 files/var.
+    chunks_xy = dict(time=120, y=256, x=384),           # 47 MB/file, 40 files/var.
+    chunks_xz = dict(time=121, z=128, x=768),           # 47 MB/file, 10 files/var.
+    chunks_dump_c = dict(time=120, z=128, y=32, x=24),  # 47 MB/file, 320 files/var.
+    )
+
+grid_400 = dict(
+    res = 400,
+    itot = 15360,
+    jtot = 1024,
+    npx = 128,
+    npy = 32,
+    coarse_ratio_x = 8,
+    coarse_ratio_y = 8,
+    time_chunk = 5*24*3600,
+    chunks_xy_c = dict(time=121, y=128, x=960),         # 59 MB/file, 2 files/var.
+    chunks_xy = dict(time=120, y=256, x=384),           # 47 MB/file, 160 files/var.
+    chunks_xz = dict(time=121, z=128, x=768),           # 47 MB/file, 20 files/var.
+    chunks_dump_c = dict(time=120, z=128, y=32, x=24),  # 47 MB/file, 320 files/var.
+    )
+
+grid_200 = dict(
+    res = 200,
+    itot = 30720,
+    jtot = 2048,
+    npx = 128,
+    npy = 64,
+    coarse_ratio_x = 16,
+    coarse_ratio_y = 16,
+    time_chunk = 1*24*3600,
+    chunks_xy_c = dict(time=25, y=128, x=1920),         # 24 MB/file, 1 file/var.
+    chunks_xy = dict(time=24, y=512, x=1024),           # 50 MB/file, 120 files/var.
+    chunks_xz = dict(time=25, z=128, x=3840),           # 47 MB/file, 8 files/var.
+    chunks_dump_c = dict(time=24, z=128, y=64, x=64),   # 50 MB/file, 60 files/var.
+    )
+
+# Base setup of all RCEMIP-II experiments, combined with perturbations above.
+rcemip_ii_base = dict(
+    sw_cos_sst = True,
+    ps = 101480,
+    xsize = 6000_000,
+    ysize = 400_000,
+    end_time = 150*24*3600,
+    wc_time = '48:00:00',
+    post_cpus = 6,
+    post_wc_time = '04:00:00',
+    cleanup = True,
+    start_xy_c = 0,
+    start_xz = 0,
+    start_dump_c = 125*24*3600,
+    start_xy = 145*24*3600,
+    restart_freq = 1*24*3600,
+    restart_archive = 25*24*3600,
+    iotimeprec = 1,
+    )
+
+def rcemip_ii_exp(exp, grid):
+    """
+    Create names for:
+    - experiment (folder): e.g. `mw295dt2p5_800`
+    - queue: e.g. `r8e1` (needs to be short!)
+    Returns single dict for experiment.
+    """
+    name = exp['name']
+    short_name = exp['short_name']
+    res = grid['res']
+
+    name = f'{name}_{res}'
+    short_name = f'r{res//100}{short_name}'
+
+    return rcemip_ii_base | grid | exp | dict(name=name, short_name=short_name)
+
+
 experiments = dict(
+
+    # RCEMIP-II, 800 m:
+    rceii_800_e1 = rcemip_ii_exp(exp_1, grid_800),
+    rceii_800_e2 = rcemip_ii_exp(exp_2, grid_800),
+    rceii_800_e3 = rcemip_ii_exp(exp_3, grid_800),
+
+    # RCEMIP-II, 400 m:
+    rceii_400_e1 = rcemip_ii_exp(exp_1, grid_400),
+    rceii_400_e2 = rcemip_ii_exp(exp_2, grid_400),
+    rceii_400_e3 = rcemip_ii_exp(exp_3, grid_400),
+
+    # RCEMIP-II, 200 m:
+    rceii_200_e1 = rcemip_ii_exp(exp_1, grid_200),
+    rceii_200_e2 = rcemip_ii_exp(exp_2, grid_200),
+    rceii_200_e3 = rcemip_ii_exp(exp_3, grid_200),
+
 
     # RCEMIP-I:
     rcemip = dict(
@@ -92,10 +199,10 @@ experiments = dict(
         post_cpus = 6,
         post_wc_time = '04:00:00',
         cleanup = False,
-        chunks_xy_c = (10_000, 32, 32),
-        chunks_xy = (10_000, 256, 256),
-        chunks_xz = (10_000, 128, 256),
-        chunks_dump_c = (10_000, 128, 32, 32),
+        chunks_xy_c = dict(time=10_000, y=32, x=32),
+        chunks_xy = dict(time=10_000, y=256, x=256),
+        chunks_xz = dict(time=10_000, z=128, x=256),
+        chunks_dump_c = dict(time=10_000, z=128, y=32, x=32),
         start_xy_c = 0,
         start_xz = 0,
         start_dump_c = 0*24*3600,
@@ -107,8 +214,8 @@ experiments = dict(
 
     # Mirjam's quick test setup.
     rcemip_c = dict(
-        name = 'new',
-        short_name = 'new',
+        name = 'rcemip_c',
+        short_name = 'rcec',
         mean_sst = 300,
         delta_sst = -1,
         sw_cos_sst = False,
@@ -127,10 +234,10 @@ experiments = dict(
         post_cpus = 6,
         post_wc_time = '01:00:00',
         cleanup = False,
-        chunks_xy_c = (10_000, 8, 32),
-        chunks_xy = (10_000, 32, 128),
-        chunks_xz = (10_000, 128, 128),
-        chunks_dump_c = (10_000, 128, 8, 32),
+        chunks_xy_c = dict(time=10_000, y=8, x=32),
+        chunks_xy = dict(time=10_000, y=32, x=128),
+        chunks_xz = dict(time=10_000, z=128, x=128),
+        chunks_dump_c = dict(time=10_000, z=128, y=8, x=32),
         start_xy_c = 0,
         start_xz = 0,
         start_dump_c = 0,
@@ -162,10 +269,10 @@ experiments = dict(
         post_cpus = 6,
         post_wc_time = '01:00:00',
         cleanup = False,
-        chunks_xy_c = (10_000, 8, 32),
-        chunks_xy = (10_000, 32, 128),
-        chunks_xz = (10_000, 128, 128),
-        chunks_dump_c = (10_000, 128, 8, 32),
+        chunks_xy_c = dict(time=10_000, y=8, x=32),
+        chunks_xy = dict(time=10_000, y=32, x=128),
+        chunks_xz = dict(time=10_000, z=128, x=128),
+        chunks_dump_c = dict(time=10_000, z=128, y=8, x=32),
         start_xy_c = 0,
         start_xz = 0,
         start_dump_c = 0,

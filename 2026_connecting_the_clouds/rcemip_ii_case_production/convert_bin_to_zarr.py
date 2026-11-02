@@ -52,11 +52,9 @@ def chunk_info_str(shape, chunks):
 
 def convert_target(paths, times, dim1, coord1, dim2, coord2, n1, n2, chunks, out_path):
 
-    time_chunk, chunk1, chunk2 = chunks
-
     delayed_reads = [dask.delayed(read_file)(p, n1, n2) for p in paths]
     file_chunks = [da.from_delayed(d, shape=(n1, n2), dtype=float_type) for d in delayed_reads]
-    data = da.stack(file_chunks, axis=0).rechunk({0: time_chunk, 1: chunk1, 2: chunk2})
+    data = da.stack(file_chunks, axis=0).rechunk({0: chunks['time'], 1: chunks[dim1], 2: chunks[dim2]})
 
     name = os.path.splitext(os.path.basename(out_path))[0]
 
@@ -74,7 +72,7 @@ def convert_cross(
     out_dir = os.path.join(chunk_dir, kind)
     os.makedirs(out_dir, exist_ok=True)
 
-    info = chunk_info_str((len(times), jtot_t, itot_t), chunks)
+    info = chunk_info_str((len(times), jtot_t, itot_t), (chunks['time'], chunks['y'], chunks['x']))
 
     for var, (locstr, z_indices) in vars_xy.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
@@ -98,7 +96,7 @@ def convert_cross_xz(work_dir, chunk_dir, vars_xz, grid, file_times, times, itot
     out_dir = os.path.join(chunk_dir, 'xz')
     os.makedirs(out_dir, exist_ok=True)
 
-    info = chunk_info_str((len(times), ktot, itot), chunks)
+    info = chunk_info_str((len(times), ktot, itot), (chunks['time'], chunks['z'], chunks['x']))
 
     for var, locstr in vars_xz.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x']
@@ -116,9 +114,7 @@ def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, it
     out_dir = os.path.join(chunk_dir, '3d_c')
     os.makedirs(out_dir, exist_ok=True)
 
-    time_chunk, chunk_z, chunk_y, chunk_x = chunks
-
-    info = chunk_info_str((len(times), ktot, jtot_c, itot_c), chunks)
+    info = chunk_info_str((len(times), ktot, jtot_c, itot_c), (chunks['time'], chunks['z'], chunks['y'], chunks['x']))
 
     for var, locstr in vars_dump_c.items():
         x_coord = grid['xh' if locstr[0] == '1' else 'x'][::ratio_x]
@@ -130,7 +126,7 @@ def convert_dump_c(work_dir, chunk_dir, vars_dump_c, grid, file_times, times, it
 
         delayed_reads = [dask.delayed(read_file_3d)(p, ktot, jtot_c, itot_c) for p in paths]
         file_chunks = [da.from_delayed(d, shape=(ktot, jtot_c, itot_c), dtype=float_type) for d in delayed_reads]
-        data = da.stack(file_chunks, axis=0).rechunk({0: time_chunk, 1: chunk_z, 2: chunk_y, 3: chunk_x})
+        data = da.stack(file_chunks, axis=0).rechunk({0: chunks['time'], 1: chunks['z'], 2: chunks['y'], 3: chunks['x']})
 
         ds = xr.Dataset(
                 {var: (('time', 'z', 'y', 'x'), data)},
