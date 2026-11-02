@@ -176,7 +176,6 @@ experiments = dict(
     rceii_200_e2 = rcemip_ii_exp(exp_2, grid_200),
     rceii_200_e3 = rcemip_ii_exp(exp_3, grid_200),
 
-
     # RCEMIP-I:
     rcemip = dict(
         name = 'rcemip-i',
@@ -282,3 +281,13 @@ experiments = dict(
         iotimeprec = 0,
         ),
     )
+
+
+print('Hacking RCEMIP-II setup for test...')
+exp = experiments['rceii_800_e1']
+exp['end_time'] = 24*3600
+exp['time_chunk'] = 24*3600
+exp['restart_freq'] = 24*3600
+exp['restart_archive'] = 24*3600
+exp['start_dump_c'] = 0
+exp['start_xy'] = 0
