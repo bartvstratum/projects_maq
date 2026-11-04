@@ -26,7 +26,7 @@ import numpy as np
 
 import ls2d
 
-from case_setup import rcemip_ii_input
+from case_setup import rcemip_ii_input, crm_init_input
 from definitions import experiments, env, float_type
 
 """
@@ -88,5 +88,18 @@ rcemip_ii_input(
         microhh_path = env['microhh_path'],
         microhh_bin = env['microhh_bin'],
         float_type = float_type)
+
+if exp['sw_crm_init']:
+    if env['crm_init_file'] is None:
+        raise Exception('No `crm_init_file` set for this compute environment')
+
+    crm_init_input(
+            crm_init_file = env['crm_init_file'],
+            xsize = exp['xsize'],
+            itot = exp['itot'],
+            jtot = exp['jtot'],
+            z = grid.z,
+            work_dir = work_dir,
+            float_type = float_type)
 
 print(f'Created experiment \"{exp["name"]}\" in {work_dir}')

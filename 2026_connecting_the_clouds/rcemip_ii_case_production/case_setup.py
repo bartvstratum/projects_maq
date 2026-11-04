@@ -23,6 +23,7 @@
 import shutil
 
 import numpy as np
+import xarray as xr
 
 # `pip install microhhpy`
 from microhhpy.io import read_ini, check_ini, save_ini, save_case_input
@@ -84,6 +85,55 @@ def calc_profiles(z, ps, mean_sst, mean_q0):
     o3 = g1 * p_hpa**g2 * np.exp(-p_hpa/g3) * 1e-6
 
     return p, q, T, thl, o3
+
+
+def interp_crm_field(field_crm, z_crm, x_norm_crm, z_les, x_norm_les):
+    field_x = np.zeros((z_crm.size, x_norm_les.size))
+    for k in range(z_crm.size):
+        field_x[k,:] = np.interp(x_norm_les, x_norm_crm, field_crm[k,:], period=1.0)
+
+    field_les = np.zeros((z_les.size, x_norm_les.size))
+    for i in range(x_norm_les.size):
+        field_les[:,i] = np.interp(z_les, z_crm, field_x[:,i])
+
+    return field_les
+
+
+def save_field_3d(field_xz, jtot, path, float_type):
+    field_xz = field_xz.astype(float_type)
+
+    with open(path, 'wb') as f:
+        for k in range(field_xz.shape[0]):
+            for j in range(jtot):
+                field_xz[k,:].tofile(f)
+
+
+def crm_init_input(crm_init_file, xsize, itot, jtot, z, work_dir, float_type=np.float32):
+    crm = xr.open_dataset(crm_init_file)
+
+    z_crm = crm['z'].values
+    x_norm_crm = crm['x_norm'].values
+
+    x_norm = (np.arange(itot) + 0.5) / itot
+    x_norm_h = np.arange(itot) / itot
+
+    zh = np.zeros(z.size)
+    zh[1:] = 0.5 * (z[:-1] + z[1:])
+
+    thl = interp_crm_field(crm['thl'].values, z_crm, x_norm_crm, z, x_norm)
+    qt = interp_crm_field(crm['qt'].values, z_crm, x_norm_crm, z, x_norm)
+    u = interp_crm_field(crm['u'].values, z_crm, x_norm_crm, z, x_norm_h)
+    v = np.zeros((z.size, itot))
+    w = interp_crm_field(crm['w'].values, z_crm, x_norm_crm, zh, x_norm)
+    w[0,:] = 0.
+
+    crm.close()
+
+    save_field_3d(thl, jtot, f'{work_dir}/thl.0000000_3d', float_type)
+    save_field_3d(qt, jtot, f'{work_dir}/qt.0000000_3d', float_type)
+    save_field_3d(u, jtot, f'{work_dir}/u.0000000_3d', float_type)
+    save_field_3d(v, jtot, f'{work_dir}/v.0000000_3d', float_type)
+    save_field_3d(w, jtot, f'{work_dir}/w.0000000_3d', float_type)
 
 
 def rcemip_ii_input(

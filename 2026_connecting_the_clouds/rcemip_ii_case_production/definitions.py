@@ -22,12 +22,11 @@ compute_env = dict(
         lfs_s = None,
         gpt_path = '/home/bart/meteo/models/coefficients_veerman/',
         microhh_path = '/home/bart/meteo/models/microhh/',
-        #microhh_bin = '/home/bart/meteo/models/microhh/build_sp_gpu/microhh',
         env_setup = None,
-        #microhh_bin = '/home/bart/meteo/models/microhh/build_spdp_cpumpi/microhh',
-        microhh_bin = '/home/bart/meteo/models/microhh/build_dp_cpumpi/microhh',
+        microhh_bin = '/home/bart/meteo/models/microhh/build_spdp_cpumpi/microhh',
         work_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/experiments',
         archive_dir = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/rcemip_ii_case_production/archive',
+        crm_init_file = '/home/bart/meteo/projects_maq/2026_connecting_the_clouds/misc/data/SAM_CRM/MW_300dT2p5/SAM_CRM_MW_300dT2p5_tmean_50d_filtered.nc',
         backend = Local_backend,
         ),
 
@@ -43,6 +42,7 @@ compute_env = dict(
         env_setup = '/home/nkbs/setup_env.sh',
         work_dir = '/scratch/nkbs/',
         archive_dir = '/scratch/nkbs/archive',
+        crm_init_file = None,
         backend = Local_backend,
         ),
 
@@ -58,18 +58,19 @@ compute_env = dict(
         env_setup = '/users/stratumv/setup_rcemip_ii.sh',
         work_dir = f'/scratch/{lumi_project}/rcemip_ii',
         archive_dir = lumi_project.replace('project_', 'lumi-') + '-private:',
+        crm_init_file = None,
         backend = Rclone_backend,
         ),
     )
 
-env = compute_env['lumi']
+env = compute_env['eddy']
 
 
 """
 Experiment specific settings.
 """
 exp_1 = dict(name = 'mw295dt2p5',  short_name = 'e1', mean_sst = 295, delta_sst = 2.5 )
-exp_2 = dict(name = 'mw300dt2p5',  short_name = 'e2', mean_sst = 300, delta_sst = 2.5 )
+exp_2 = dict(name = 'mw300dt2p5',  short_name = 'e2', mean_sst = 300, delta_sst = 2.5, sw_crm_init = True)
 exp_3 = dict(name = 'mw300dt1p25', short_name = 'e3', mean_sst = 300, delta_sst = 1.25)
 
 # Note: wall clock limit LUMI = 2 days.
@@ -140,6 +141,7 @@ rcemip_ii_base = dict(
     restart_freq = 1*24*3600,
     restart_archive = 25*24*3600,
     iotimeprec = 1,
+    sw_crm_init = False,
     )
 
 def rcemip_ii_exp(exp, grid):
@@ -209,6 +211,7 @@ experiments = dict(
         restart_freq = 1*24*3600,
         restart_archive = 4*24*3600,
         iotimeprec = 1,
+        sw_crm_init = False,
         ),
 
     # Mirjam's quick test setup.
@@ -244,6 +247,7 @@ experiments = dict(
         restart_freq = 24*3600,
         restart_archive = 10*24*3600,
         iotimeprec = 0,
+        sw_crm_init = False,
         ),
 
     # Small domain for development testing.
@@ -251,15 +255,15 @@ experiments = dict(
         name = 'dev',
         short_name = 'dev',
         mean_sst = 300,
-        delta_sst = 1.25,
+        delta_sst = 0.5,
         sw_cos_sst = True,
         ps = 101480,
         xsize = 128*400,
         ysize = 64*400,
         itot = 128,
         jtot = 64,
-        npx = 16,
-        npy = 8,
+        npx = 2,
+        npy = 4,
         coarse_ratio_x = 8,
         coarse_ratio_y = 8,
         end_time = 2*24*3600,
@@ -279,15 +283,6 @@ experiments = dict(
         restart_freq = 12*3600,
         restart_archive = 24*3600,
         iotimeprec = 0,
+        sw_crm_init = False,
         ),
     )
-
-
-print('Hacking RCEMIP-II setup for test...')
-exp = experiments['rceii_800_e1']
-exp['end_time'] = 24*3600
-exp['time_chunk'] = 24*3600
-exp['restart_freq'] = 24*3600
-exp['restart_archive'] = 24*3600
-exp['start_dump_c'] = 0
-exp['start_xy'] = 0
