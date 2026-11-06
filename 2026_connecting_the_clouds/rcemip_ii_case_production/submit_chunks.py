@@ -57,6 +57,11 @@ restart_file = f'{work_dir}/time.{args.start_time // 10**exp["iotimeprec"]:07d}'
 if args.start_time > 0 and not os.path.exists(restart_file):
     raise Exception(f'Restart file {restart_file} does not exist')
 
+crm_init_cmd = ''
+if exp['sw_crm_init']:
+    for name in ['thl', 'qt', 'u', 'v', 'w']:
+        crm_init_cmd += f'mv {name}.0000000_3d {name}.0000000\n'
+
 
 """
 Spawn simulations chunks, daisy-chained through their SLURM IDs.
@@ -126,6 +131,7 @@ for i in range(args.start_time // time_chunk, n_chunks):
             if start_time == 0:
                 f.write(f'echo "Starting microhh init..."\n')
                 f.write(f'srun ./microhh init rcemip_ii\n')
+                f.write(crm_init_cmd)
             f.write(f'echo "Starting microhh run..."\n')
             f.write(f'srun ./microhh run rcemip_ii\n\n')
 
@@ -209,6 +215,7 @@ for i in range(args.start_time // time_chunk, n_chunks):
             if start_time == 0:
                 f.write(f'echo "Starting microhh init..."\n')
                 f.write(f'{mhh_cmd} init rcemip_ii >> {run_name}.stdout 2>> {run_name}.stderr\n')
+                f.write(crm_init_cmd)
             f.write(f'echo "Starting microhh run..."\n')
             f.write(f'{mhh_cmd} run rcemip_ii >> {run_name}.stdout 2>> {run_name}.stderr\n\n')
 

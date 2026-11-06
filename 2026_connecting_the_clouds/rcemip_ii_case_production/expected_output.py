@@ -56,6 +56,7 @@ vars_dump_c = dict(
     qsg_tend_sed   = '000',
     qtr_tend_frz   = '000',
     thl_tend_micro = '000',
+    qt_tend_micro  = '000',
     uthl           = '100',
     vthl           = '010',
     wthl           = '001',
